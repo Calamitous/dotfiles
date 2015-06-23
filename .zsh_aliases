@@ -1,0 +1,8 @@
+alias change_aliases="vim ~/.zsh_aliases; source ~/.zsh_aliases"
+alias gst="git status"
+alias gpr="git pull --rebase"
+alias gpo="git push origin"
+alias x="exit"
+alias gx="grep-fu"
+alias pglog='tail -f /usr/local/var/postgres/server.log'
+alias qcurl="curl --fail --silent --show-error"
