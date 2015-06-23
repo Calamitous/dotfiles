@@ -15,8 +15,7 @@ eval "$(rbenv init - zsh --no-rehash)"
 source ~/.nvm/nvm.sh
 unsetopt AUTO_CD
 
-export AWS_ACCESS_KEY_ID=AKIAJ53WMSACZHHZWVPA
-export AWS_SECRET_ACCESS_KEY=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
+source ~/.aws_conf
 export EDITOR=vim
 export PATH=$PATH:~/Projects/grep-fu/bin
 export PATH=/opt/local/bin:/opt/local/sbin:$PATH
