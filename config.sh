@@ -15,6 +15,8 @@ ln -s /home/ericbudd/Projects/dotfiles/vimrc /home/ericbudd/.vimrc
 ln -s /home/ericbudd/Projects/dotfiles/zsh_aliases /home/ericbudd/.zsh_aliases
 ln -s /home/ericbudd/Projects/dotfiles/zshrc /home/ericbudd/.zshrc
 
+touch ~/.private_conf
+
 # Vundle install
 git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 vim +PluginInstall +qall

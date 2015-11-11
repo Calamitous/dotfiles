@@ -1,22 +1,18 @@
-#
-# Executes commands at the start of an interactive session.
-#
-# Authors:
-#   Sorin Ionescu <sorin.ionescu@gmail.com>
-#
-
 # Source Prezto.
 if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
   source "${ZDOTDIR:-$HOME}/.zprezto/init.zsh"
 fi
+zstyle 'prompt' theme 'damoekri'
 
-# Customize to your needs...
 # eval "$(rbenv init - zsh --no-rehash)"
 # source ~/.nvm/nvm.sh
 unsetopt AUTO_CD
 
-# source ~/.aws_conf
+source ~/.private_conf
+
 export EDITOR=vim
+export VISUAL=vim
+
 # export PATH=$PATH:~/Projects/grep-fu/bin
 export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 # export PATH=$PATH:/Users/ericbudd/.rbenv/versions/2.2.0/lib/ruby/gems/2.2.0/gems/tmuxinator-0.6.10/bin
