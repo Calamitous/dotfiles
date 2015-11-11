@@ -1,10 +1,10 @@
 [user]
-  name = Eric Biven
-  email = eric@biven.us
+  name = Eric Budd
+  email = eric.b.budd@gmail.com
 [core]
   editor = vim
   pager = less -x4
-  excludesfile = /Users/ebiven/.gitignore_global
+  excludesfile = /home/ericbudd/.gitignore_global
   commentchar = "#"
 [push]
   default = current
@@ -35,9 +35,3 @@
   lg = !"git lg1"
   co = checkout
   st = status
-[difftool "sourcetree"]
-	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
-	path = 
-[mergetool "sourcetree"]
-	cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
-	trustExitCode = true
