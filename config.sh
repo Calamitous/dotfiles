@@ -2,6 +2,8 @@ wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb && sudo 
 
 sudo apt-get install build-essential cmake postgresql erlang git vim xmonad dmenu zsh python-dev tmux nodejs npm elixir vim-gnome ncurses-term
 
+chsh -s $(which zsh)
+
 mkdir Projects
 cd Projects
 git clone git@github.com:Calamitous/dotfiles.git
