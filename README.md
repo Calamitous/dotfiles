@@ -1,6 +1,7 @@
+```
 wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb && sudo dpkg -i erlang-solutions_1.0_all.deb
 
-sudo apt-get install build-essential cmake postgresql erlang git vim xmonad dmenu zsh python-dev tmux nodejs npm elixir vim-gnome ncurses-term
+sudo apt-get install build-essential cmake postgresql erlang git vim xmonad dmenu zsh python-dev tmux nodejs npm elixir vim-gnome ncurses-term openssh-server
 
 git clone --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
 
@@ -37,4 +38,4 @@ git clone git://github.com/altercation/vim-colors-solarized.git ~/.vim/bundle/vi
 sudo gem install grep-fu
 
 sudo dpkg -i ./<file>
-
+```
