@@ -24,6 +24,7 @@ ln -s /home/ericbudd/Projects/dotfiles/tmuxinator /home/ericbudd/.tmuxinator
 ln -s /home/ericbudd/Projects/dotfiles/vimrc /home/ericbudd/.vimrc
 ln -s /home/ericbudd/Projects/dotfiles/zsh_aliases /home/ericbudd/.zsh_aliases
 ln -s /home/ericbudd/Projects/dotfiles/zshrc /home/ericbudd/.zshrc
+ln -s /home/ericbudd/Projects/dotfiles/zpreztorc /home/ericbudd/.zpreztorc
 
 touch ~/.private_conf
 
