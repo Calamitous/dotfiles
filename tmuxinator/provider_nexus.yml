@@ -1,13 +1,13 @@
 # ~/.tmuxinator/provider_nexus.yml
 
 name: provider_nexus
-root: ~/Workspace/Strenuus/provider-nexus-api/
+root: ~/Projects/provider-nexus-api/
 
 windows:
   - editor:
       layout: 0881,120x39,0,0{77x39,0,0,0,42x39,78,0[42x19,78,0,2,42x19,78,20,3]}
       panes:
         - vim
-        - LOG_LEVEL=debug gulp|bunyan
         - NODE_ENV=test gulp test -w
+  - server: LOG_LEVEL=debug gulp|bunyan
   - pg: psql provider_nexus
