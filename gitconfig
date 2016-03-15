@@ -37,3 +37,5 @@
   st = status
 [http]
 	postBuffer = 524288000
+[help]
+	autocorrect = 20
