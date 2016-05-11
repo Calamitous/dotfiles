@@ -124,7 +124,7 @@ let NERDTreeShowHidden=1
 " Airline
 set laststatus=2 " Make airline show up at start.
 let g:airline_powerline_fonts=1
-let g:airline_theme='solarized'
+let g:airline_theme = 'base16_solarized'
 let g:airline#extensions#branch#enabled=1
 
 " Tabular
@@ -218,3 +218,12 @@ function! InitializeDirectories()
   endfor
 endfunction
 call InitializeDirectories()
+
+let &t_Co=256
+scriptencoding utf-8
+set encoding=utf-8
+
+if !exists('g:airline_symbols')
+  let g:airline_symbols = {}
+endif
+let g:airline_symbols.space = "\ua0"
