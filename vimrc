@@ -15,7 +15,6 @@ Plugin 'scrooloose/nerdcommenter'
 Plugin 'Lokaltog/vim-easymotion'
 Plugin 'godlygeek/tabular'
 Plugin 'tpope/vim-surround'
-Plugin 'altercation/vim-colors-solarized'
 Plugin 'vim-airline/vim-airline'
 Plugin 'vim-airline/vim-airline-themes'
 Plugin 'jeetsukumaran/vim-buffergator'
@@ -94,9 +93,9 @@ endif
 
 " Solarized
 syntax enable
-set background=dark
-colorscheme solarized
+colorscheme industry
 " Let us switch from Solarized light to dark and back.
+" set background=dark
 map <Leader>l :set background=light<CR>
 map <Leader>d :set background=dark<CR>
 
@@ -124,7 +123,8 @@ let NERDTreeShowHidden=1
 " Airline
 set laststatus=2 " Make airline show up at start.
 let g:airline_powerline_fonts=1
-let g:airline_theme = 'base16_solarized'
+" let g:airline_theme = 'base16_solarized'
+let g:airline_theme = 'badwolf'
 let g:airline#extensions#branch#enabled=1
 
 " Tabular
