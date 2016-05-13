@@ -1,7 +1,7 @@
 ```
 wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb && sudo dpkg -i erlang-solutions_1.0_all.deb
 
-sudo apt-get install build-essential cmake postgresql erlang git vim xmonad dmenu zsh python-dev tmux nodejs npm elixir vim-gnome ncurses-term openssh-server powerline
+sudo apt-get install build-essential cmake postgresql erlang git vim xmonad dmenu zsh python-dev tmux nodejs npm elixir vim-gnome ncurses-term openssh-server powerline sqlite3 links
 
 git clone --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
 
