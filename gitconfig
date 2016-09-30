@@ -35,3 +35,5 @@
   lg = !"git lg1"
   co = checkout
   st = status
+[http]
+	postBuffer = 524288000
