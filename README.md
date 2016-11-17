@@ -15,16 +15,16 @@ chsh -s $(which zsh)
 mkdir Projects
 cd Projects
 git clone git@github.com:Calamitous/dotfiles.git
-ln -s /home/eric/Projects/dotfiles/ /home/eric/.
+ln -s ~/Projects/dotfiles/ ~/.
 
-ln -s /home/eric/Projects/dotfiles/gitconfig /home/eric/.gitconfig
-ln -s /home/eric/Projects/dotfiles/jshintrc /home/eric/.jshintrc
-ln -s /home/eric/Projects/dotfiles/tmux.conf /home/eric/.tmux.conf
-ln -s /home/eric/Projects/dotfiles/tmuxinator /home/eric/.tmuxinator
-ln -s /home/eric/Projects/dotfiles/vimrc /home/eric/.vimrc
-ln -s /home/eric/Projects/dotfiles/zsh_aliases /home/eric/.zsh_aliases
-ln -s /home/eric/Projects/dotfiles/zshrc /home/eric/.zshrc
-ln -s /home/eric/Projects/dotfiles/zpreztorc /home/eric/.zpreztorc
+ln -s ~/Projects/dotfiles/gitconfig ~/.gitconfig
+ln -s ~/Projects/dotfiles/jshintrc ~/.jshintrc
+ln -s ~/Projects/dotfiles/tmux.conf ~/.tmux.conf
+ln -s ~/Projects/dotfiles/tmuxinator ~/.tmuxinator
+ln -s ~/Projects/dotfiles/vimrc ~/.vimrc
+ln -s ~/Projects/dotfiles/zsh_aliases ~/.zsh_aliases
+ln -s ~/Projects/dotfiles/zshrc ~/.zshrc
+ln -s ~/Projects/dotfiles/zpreztorc ~/.zpreztorc
 
 touch ~/.private_conf
 
