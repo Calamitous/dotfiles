@@ -25,6 +25,10 @@ ln -s ~/Projects/dotfiles/vimrc ~/.vimrc
 ln -s ~/Projects/dotfiles/zsh_aliases ~/.zsh_aliases
 ln -s ~/Projects/dotfiles/zshrc ~/.zshrc
 ln -s ~/Projects/dotfiles/zpreztorc ~/.zpreztorc
+mkdir ~/.i3
+ln -s ~/Projects/dotfiles/i3config ~/.i3/config
+ln -s ~/Projects/dotfiles/i3status.conf ~/.i3status.conf
+ln -s ~/Projects/dotfiles/muttrc ~/.muttrc
 
 touch ~/.private_conf
 
