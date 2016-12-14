@@ -211,3 +211,7 @@ if !exists('g:airline_symbols')
   let g:airline_symbols = {}
 endif
 let g:airline_symbols.space = "\ua0"
+
+set guioptions-=m
+set guioptions-=T
+set guioptions-=r
