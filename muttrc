@@ -9,5 +9,7 @@ set folder = "imaps://imap.gmail.com:993"
 set header_cache="~/.mutt/cache/headers"
 set message_cachedir="~/.mutt/cache/bodies"
 set certificate_file=~/.mutt/certificates
-set sort=threads
 set editor = "vim"
+
+set sort=threads
+set sort_aux=reverse-last-date-received
