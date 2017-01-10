@@ -34,3 +34,13 @@ else
 fi
 
 export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
+
+autoload -U compinit && compinit
+zmodload -i zsh/complist
+
+fpath=(/usr/local/share/zsh-completions $fpath)
+
+export HISTFILE=~/.zsh_history
+export PATH=~/instantclient:$PATH
+export PATH=~/Library/Python/2.7/bin:$PATH
+export TNS_ADMIN=~/instanclient/tnsnames.ora

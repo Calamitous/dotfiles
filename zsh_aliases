@@ -10,5 +10,13 @@ alias x="exit"
 alias gx="grep-fu"
 alias pglog='tail -f /usr/local/var/postgres/server.log'
 alias qcurl="curl --fail --silent --show-error"
+
 alias tmls="tmux list-sessions"
 alias tmat="tmux attach -t"
+
+alias dweb='docker-compose run --rm web'
+alias drake='docker-compose run --rm web rake'
+alias drails='docker-compose run --rm web rails'
+alias drm='docker rm'
+alias dps='docker ps -a'
+alias drun='docker run'

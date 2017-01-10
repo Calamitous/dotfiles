@@ -31,7 +31,7 @@ Plugin 'amirh/HTML-AutoCloseTag'
 Plugin 'hail2u/vim-css3-syntax'
 Plugin 'edkolev/tmuxline.vim'
 Plugin 'aquach/vim-http-client'
-Plugin 'Valloric/YouCompleteMe'
+" Plugin 'Valloric/YouCompleteMe'
 Plugin 'elixir-lang/vim-elixir'
 
 " All of your Plugins must be added before the following line
@@ -210,8 +210,21 @@ set encoding=utf-8
 if !exists('g:airline_symbols')
   let g:airline_symbols = {}
 endif
+
 let g:airline_symbols.space = "\ua0"
 
 set guioptions-=m
 set guioptions-=T
 set guioptions-=r
+
+set colorcolumn=81,121
+
+set listchars=tab:>~,nbsp:_,trail:.
+set list
+
+runtime ~/.vim/bundle/dragvisuals.vim
+vmap  <expr>  <LEFT>   DVB_Drag('left')
+vmap  <expr>  <RIGHT>  DVB_Drag('right')
+vmap  <expr>  <DOWN>   DVB_Drag('down')
+vmap  <expr>  <UP>     DVB_Drag('up')
+vmap  <expr>  D        DVB_Duplicate()
