@@ -92,7 +92,11 @@ endif
 
 " Solarized
 syntax enable
-colorscheme industry
+"colorscheme industry
+set background=dark
+" colorscheme solarized
+colorscheme elflord
+
 " Let us switch from Solarized light to dark and back.
 " set background=dark
 map <Leader>l :set background=light<CR>
