@@ -3,6 +3,7 @@ alias gst="git status"
 alias gpr="git pull --rebase"
 alias gpo="git push origin"
 alias gco="git checkout"
+alias gcpk="git cherry-pick"
 alias gL="git log"
 alias gl="git log --all --graph --decorate=short --oneline -n 25"
 alias gb="git branch"
@@ -24,3 +25,7 @@ alias dc='docker-compose'
 alias dcd='docker-compose down'
 alias dcb='docker-compose build'
 alias dcu='docker-compose up'
+
+alias route='bundle exec rake routes | grep '
+alias brake='bundle exec rake '
+alias bpronto='bundle exec pronto run '

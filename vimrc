@@ -46,7 +46,7 @@ filetype plugin indent on    " required
 " see :h vundle for more details or wiki for FAQ
 " Put your non-Plugin stuff after this line
 
-let mapleader=','
+let mapleader=' '
 
 " Autoindent with two spaces, always expand tabs
 set tabstop=2
@@ -68,7 +68,7 @@ set ignorecase " Case insensitive search
 set smartcase " ...except when we put a cap in there
 set scrolloff=5 " Minimum lines above/below cursor
 set nowrap " Don't wrap long lines
-set paste " Make paste handling rational
+" set paste " Make paste handling rational
 
 " Remove trailing whitespace on save
 function! <SID>StripTrailingWhitespaces()
@@ -96,6 +96,7 @@ syntax enable
 set background=dark
 " colorscheme solarized
 colorscheme elflord
+" colorscheme railscasts
 
 " Let us switch from Solarized light to dark and back.
 " set background=dark
@@ -103,6 +104,7 @@ map <Leader>l :set background=light<CR>
 map <Leader>d :set background=dark<CR>
 
 " Fugitive
+map <Leader>gb :Gblame<CR>
 map <Leader>gs :Gstatus<CR>
 map <Leader>gc :Gcommit<CR>
 map <Leader>gp :Gpush<CR>
