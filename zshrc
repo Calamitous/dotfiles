@@ -41,8 +41,8 @@ zmodload -i zsh/complist
 fpath=(/usr/local/share/zsh-completions $fpath)
 
 export HISTFILE=~/.zsh_history
-export PATH=~/instantclient:$PATH
-export PATH=~/Library/Python/2.7/bin:$PATH
-export TNS_ADMIN=~/instanclient/tnsnames.ora
 
 export LEDGER_FILE=~/Projects/personal_finances/hledger.journal
+
+bindkey "^R" history-incremental-search-backward
+
