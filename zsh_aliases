@@ -29,3 +29,5 @@ alias dcu='docker-compose up'
 alias route='bundle exec rake routes | grep '
 alias brake='bundle exec rake '
 alias bpronto='bundle exec pronto run '
+
+alias hl="hledger"
