@@ -92,11 +92,11 @@ endif
 
 " Solarized
 syntax enable
-"colorscheme industry
 set background=dark
+colorscheme railscasts
+" colorscheme elflord
 " colorscheme solarized
-colorscheme elflord
-" colorscheme railscasts
+" colorscheme industry
 
 " Let us switch from Solarized light to dark and back.
 " set background=dark
