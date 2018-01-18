@@ -93,7 +93,9 @@ endif
 " Solarized
 syntax enable
 set background=dark
-colorscheme railscasts
+colorscheme dracula
+" colorscheme zenburn
+" colorscheme railscasts
 " colorscheme elflord
 " colorscheme solarized
 " colorscheme industry
