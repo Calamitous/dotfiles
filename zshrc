@@ -27,11 +27,7 @@ bindkey "^A" beginning-of-line
 bindkey "^E" end-of-line
 bindkey "^X^E" edit-command-line
 
-if [ -e /usr/share/terminfo/x/xterm-256color ]; then
-        export TERM='xterm-256color'
-else
-        export TERM='xterm-color'
-fi
+export TERM='xterm-256color'
 
 export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
 
