@@ -34,6 +34,8 @@ Plugin 'aquach/vim-http-client'
 " Plugin 'Valloric/YouCompleteMe'
 Plugin 'elixir-lang/vim-elixir'
 
+set rtp+=/usr/local/opt/fzf
+
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required
@@ -143,6 +145,8 @@ nmap <Leader>a: :Tabularize /:<CR>
 vmap <Leader>a: :Tabularize /:<CR>
 nmap <Leader>a, :Tabularize /,<CR>
 vmap <Leader>a, :Tabularize /,<CR>
+nmap <Leader>o :FZF<CR>
+
 
 " ctrlp
 let g:ctrlp_user_command=['.git/', 'cd %s && git ls-files --exclude-standard -co']
@@ -150,6 +154,51 @@ let g:ctrlp_extensions=['tag', 'buffertag', 'quickfix', 'line', 'changes']
 let g:ctrlp_custom_ignore={
   \ 'dir': '(node_modules)|(\v[\/]\.(git|hg|svn)$)'
   \ }
+
+" fzf
+" This is the default extra key bindings
+" let g:fzf_action = { 'ctrl-t': 'tab split', 'ctrl-x': 'split', 'ctrl-v': 'vsplit' }
+
+" An action can be a reference to a function that processes selected lines
+function! s:build_quickfix_list(lines)
+  call setqflist(map(copy(a:lines), '{ "filename": v:val }'))
+  copen
+  cc
+endfunction
+
+" let g:fzf_action = { 'ctrl-q': function('s:build_quickfix_list'), 'ctrl-t': 'tab split', 'ctrl-x': 'split', 'ctrl-v': 'vsplit' }
+let g:fzf_action = { 'ctrl-q': function('s:build_quickfix_list') }
+
+" Default fzf layout
+" - down / up / left / rig, 'ctrl-t': 'tab split', 'ctrl-x': 'split', 'ctrl-v': 'vsplit' ht
+let g:fzf_layout = { 'down': '~40%' }
+
+" You can set up fzf window using a Vim command (Neovim or latest Vim 8 required)
+" let g:fzf_layout = { 'window': 'enew' }
+" let g:fzf_layout = { 'window': '-tabnew' }
+" let g:fzf_layout = { 'window': '10split enew' }
+
+" Customize fzf colors to match your color scheme
+let g:fzf_colors =
+\ { 'fg':      ['fg', 'Normal'],
+  \ 'bg':      ['bg', 'Normal'],
+  \ 'hl':      ['fg', 'Comment'],
+  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+  \ 'hl+':     ['fg', 'Statement'],
+  \ 'info':    ['fg', 'PreProc'],
+  \ 'border':  ['fg', 'Ignore'],
+  \ 'prompt':  ['fg', 'Conditional'],
+  \ 'pointer': ['fg', 'Exception'],
+  \ 'marker':  ['fg', 'Keyword'],
+  \ 'spinner': ['fg', 'Label'],
+  \ 'header':  ['fg', 'Comment'] }
+
+" Enable per-command history.
+" CTRL-N and CTRL-P will be automatically bound to next-history and
+" previous-history instead of down and up. If you don't like the change,
+" explicitly bind the keys to down and up in your $FZF_DEFAULT_OPTS.
+let g:fzf_history_dir = '~/.local/share/fzf-history'
 
 " buffergator
 let g:buffergator_sort_regime='mru'

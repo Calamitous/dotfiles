@@ -42,3 +42,5 @@ export LEDGER_FILE=~/Projects/personal_finances/hledger.journal
 
 bindkey "^R" history-incremental-search-backward
 
+
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
