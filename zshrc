@@ -28,6 +28,7 @@ bindkey "^E" end-of-line
 bindkey "^X^E" edit-command-line
 
 export TERM='xterm-256color'
+setxkbmap -option caps:escape
 
 export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
 
