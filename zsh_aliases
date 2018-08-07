@@ -31,3 +31,4 @@ alias brake='bundle exec rake '
 alias bpronto='bundle exec pronto run '
 
 alias hl="hledger"
+alias l="ls -laG"

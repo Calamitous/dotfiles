@@ -33,6 +33,7 @@ Plugin 'edkolev/tmuxline.vim'
 Plugin 'aquach/vim-http-client'
 " Plugin 'Valloric/YouCompleteMe'
 Plugin 'elixir-lang/vim-elixir'
+Plugin 'elmcast/elm-vim'
 
 set rtp+=/usr/local/opt/fzf
 

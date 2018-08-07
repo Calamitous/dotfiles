@@ -4,8 +4,6 @@ if [[ -s "${ZDOTDIR:-$HOME}/.zprezto/init.zsh" ]]; then
 fi
 zstyle 'prompt' theme 'damoekri'
 
-# eval "$(rbenv init - zsh --no-rehash)"
-# source ~/.nvm/nvm.sh
 unsetopt AUTO_CD
 
 source ~/.private_conf
@@ -29,8 +27,6 @@ bindkey "^X^E" edit-command-line
 
 export TERM='xterm-256color'
 setxkbmap -option caps:escape
-
-export PATH="$PATH:$HOME/.rvm/bin" # Add RVM to PATH for scripting
 
 autoload -U compinit && compinit
 zmodload -i zsh/complist
