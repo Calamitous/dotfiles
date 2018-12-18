@@ -32,3 +32,5 @@ alias bpronto='bundle exec pronto run '
 
 alias hl="hledger"
 alias l="ls -laG"
+
+alias rx="rg --files-with-matches"
