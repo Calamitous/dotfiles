@@ -39,5 +39,7 @@ export LEDGER_FILE=~/Projects/personal_finances/hledger.journal
 
 bindkey "^R" history-incremental-search-backward
 
+[-f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*"'
+
