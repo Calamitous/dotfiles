@@ -14,6 +14,8 @@ alias qcurl="curl --fail --silent --show-error"
 
 alias tmls="tmux list-sessions"
 alias tmat="tmux attach -t"
+alias tmsw="tmux switch -t"
+alias tmnw="tmux new -s"
 
 alias dweb='docker-compose run --rm web'
 alias drake='docker-compose run --rm web rake'

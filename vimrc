@@ -9,37 +9,33 @@ set rtp+=~/.fzf
 " let Vundle manage Vundle, required
 Plugin 'gmarik/Vundle.vim'
 
-Plugin 'tpope/vim-fugitive'
-Plugin 'ctrlpvim/ctrlp.vim'
-Plugin 'scrooloose/nerdtree'
-Plugin 'scrooloose/nerdcommenter'
 Plugin 'Lokaltog/vim-easymotion'
-Plugin 'godlygeek/tabular'
-Plugin 'tpope/vim-surround'
-Plugin 'vim-airline/vim-airline'
-Plugin 'vim-airline/vim-airline-themes'
-Plugin 'jeetsukumaran/vim-buffergator'
-Plugin 'scrooloose/syntastic'
-Plugin 'mhinz/vim-signify'
-Plugin 'groenewege/vim-less'
-Plugin 'pangloss/vim-javascript'
-Plugin 'kchmck/vim-coffee-script'
-Plugin 'tpope/vim-rails'
-Plugin 'tpope/vim-markdown'
-Plugin 'digitaltoad/vim-jade.git'
-Plugin 'tpope/vim-haml'
 Plugin 'amirh/HTML-AutoCloseTag'
-Plugin 'hail2u/vim-css3-syntax'
-Plugin 'edkolev/tmuxline.vim'
-Plugin 'aquach/vim-http-client'
-" Plugin 'Valloric/YouCompleteMe'
-Plugin 'elixir-lang/vim-elixir'
-Plugin 'elmcast/elm-vim'
+Plugin 'godlygeek/tabular'
+Plugin 'itchyny/lightline.vim'
+Plugin 'jeetsukumaran/vim-buffergator'
+Plugin 'mhinz/vim-signify' " Maybe?
+Plugin 'scrooloose/nerdcommenter'
+Plugin 'scrooloose/nerdtree'
+Plugin 'sheerun/vim-polyglot'
+Plugin 'tpope/vim-commentary'
+Plugin 'tpope/vim-fugitive'
+Plugin 'tpope/vim-repeat'
+Plugin 'tpope/vim-speeddating'
+Plugin 'tpope/vim-surround'
 
-set rtp+=/usr/local/opt/fzf
+" Plugin 'ctrlpvim/ctrlp.vim'
+" Plugin 'elixir-lang/vim-elixir'
+" Plugin 'elmcast/elm-vim'
+" Plugin 'kchmck/vim-coffee-script'
+" Plugin 'scrooloose/syntastic'
+" Plugin 'tpope/vim-markdown'
+" Plugin 'tpope/vim-rails'
+" Plugin 'w0rp/ale' " New linting hotness
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
+
 filetype plugin indent on    " required
 " Brief help
 " :PluginList       - lists configured plugins
@@ -104,8 +100,6 @@ colorscheme elflord
 " colorscheme solarized
 " colorscheme industry
 
-" Let us switch from Solarized light to dark and back.
-" set background=dark
 map <Leader>l :set background=light<CR>
 map <Leader>d :set background=dark<CR>
 
@@ -116,9 +110,9 @@ map <Leader>gc :Gcommit<CR>
 map <Leader>gp :Gpush<CR>
 
 " Syntastic
-let g:syntastic_mode_map = { 'mode': 'active',
-                            \ 'active_filetypes': ['ruby', 'coffee', 'javascript', 'json'],
-                            \ 'passive_filetypes': ['html', 'handlebars'] }
+" let g:syntastic_mode_map = { 'mode': 'active',
+                            " \ 'active_filetypes': ['ruby', 'coffee', 'javascript', 'json'],
+                            " \ 'passive_filetypes': ['html', 'handlebars'] }
 
 " CoffeeWatch
 set suffixesadd+=.coffee
@@ -131,13 +125,6 @@ let NERDTreeShowBookmarks=1
 let NERDTreeQuitOnOpen=1
 let NERDTreeShowHidden=1
 
-" Airline
-set laststatus=2 " Make airline show up at start.
-let g:airline_powerline_fonts=1
-" let g:airline_theme = 'base16_solarized'
-let g:airline_theme = 'badwolf'
-let g:airline#extensions#branch#enabled=1
-
 " Tabular
 nmap <Leader>a= :Tabularize /=<CR>
 vmap <Leader>a= :Tabularize /=<CR>
@@ -149,8 +136,10 @@ nmap <Leader>a: :Tabularize /:<CR>
 vmap <Leader>a: :Tabularize /:<CR>
 nmap <Leader>a, :Tabularize /,<CR>
 vmap <Leader>a, :Tabularize /,<CR>
+
 nmap <Leader>o :FZF<CR>
 
+set noshowmode
 
 " ctrlp
 let g:ctrlp_user_command=['.git/', 'cd %s && git ls-files --exclude-standard -co']
@@ -158,51 +147,6 @@ let g:ctrlp_extensions=['tag', 'buffertag', 'quickfix', 'line', 'changes']
 let g:ctrlp_custom_ignore={
   \ 'dir': '(node_modules)|(\v[\/]\.(git|hg|svn)$)'
   \ }
-
-" fzf
-" This is the default extra key bindings
-" let g:fzf_action = { 'ctrl-t': 'tab split', 'ctrl-x': 'split', 'ctrl-v': 'vsplit' }
-
-" An action can be a reference to a function that processes selected lines
-function! s:build_quickfix_list(lines)
-  call setqflist(map(copy(a:lines), '{ "filename": v:val }'))
-  copen
-  cc
-endfunction
-
-" let g:fzf_action = { 'ctrl-q': function('s:build_quickfix_list'), 'ctrl-t': 'tab split', 'ctrl-x': 'split', 'ctrl-v': 'vsplit' }
-let g:fzf_action = { 'ctrl-q': function('s:build_quickfix_list') }
-
-" Default fzf layout
-" - down / up / left / rig, 'ctrl-t': 'tab split', 'ctrl-x': 'split', 'ctrl-v': 'vsplit' ht
-let g:fzf_layout = { 'down': '~40%' }
-
-" You can set up fzf window using a Vim command (Neovim or latest Vim 8 required)
-" let g:fzf_layout = { 'window': 'enew' }
-" let g:fzf_layout = { 'window': '-tabnew' }
-" let g:fzf_layout = { 'window': '10split enew' }
-
-" Customize fzf colors to match your color scheme
-let g:fzf_colors =
-\ { 'fg':      ['fg', 'Normal'],
-  \ 'bg':      ['bg', 'Normal'],
-  \ 'hl':      ['fg', 'Comment'],
-  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
-  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
-  \ 'hl+':     ['fg', 'Statement'],
-  \ 'info':    ['fg', 'PreProc'],
-  \ 'border':  ['fg', 'Ignore'],
-  \ 'prompt':  ['fg', 'Conditional'],
-  \ 'pointer': ['fg', 'Exception'],
-  \ 'marker':  ['fg', 'Keyword'],
-  \ 'spinner': ['fg', 'Label'],
-  \ 'header':  ['fg', 'Comment'] }
-
-" Enable per-command history.
-" CTRL-N and CTRL-P will be automatically bound to next-history and
-" previous-history instead of down and up. If you don't like the change,
-" explicitly bind the keys to down and up in your $FZF_DEFAULT_OPTS.
-let g:fzf_history_dir = '~/.local/share/fzf-history'
 
 " buffergator
 let g:buffergator_sort_regime='mru'
@@ -264,31 +208,66 @@ function! InitializeDirectories()
 endfunction
 call InitializeDirectories()
 
-let &t_Co=256
 scriptencoding utf-8
 set encoding=utf-8
-
-if !exists('g:airline_symbols')
-  let g:airline_symbols = {}
-endif
-
-let g:airline_symbols.space = "\ua0"
 
 set guioptions-=m
 set guioptions-=T
 set guioptions-=r
+
+if !has('gui_running')
+  set t_Co=256
+endif
 
 set colorcolumn=81,121
 
 set listchars=tab:>~,nbsp:_,trail:.
 set list
 
-runtime ~/.vim/bundle/dragvisuals.vim
-vmap  <expr>  <LEFT>   DVB_Drag('left')
-vmap  <expr>  <RIGHT>  DVB_Drag('right')
-vmap  <expr>  <DOWN>   DVB_Drag('down')
-vmap  <expr>  <UP>     DVB_Drag('up')
-vmap  <expr>  D        DVB_Duplicate()
+" fzf
+" This is the default extra key bindings
+" let g:fzf_action = { 'ctrl-t': 'tab split', 'ctrl-x': 'split', 'ctrl-v': 'vsplit' }
+
+" An action can be a reference to a function that processes selected lines
+function! s:build_quickfix_list(lines)
+  call setqflist(map(copy(a:lines), '{ "filename": v:val }'))
+  copen
+  cc
+endfunction
+
+" let g:fzf_action = { 'ctrl-q': function('s:build_quickfix_list'), 'ctrl-t': 'tab split', 'ctrl-x': 'split', 'ctrl-v': 'vsplit' }
+let g:fzf_action = { 'ctrl-q': function('s:build_quickfix_list') }
+
+" Default fzf layout
+" - down / up / left / rig, 'ctrl-t': 'tab split', 'ctrl-x': 'split', 'ctrl-v': 'vsplit' ht
+let g:fzf_layout = { 'down': '~60%' }
+
+" You can set up fzf window using a Vim command (Neovim or latest Vim 8 required)
+" let g:fzf_layout = { 'window': 'enew' }
+" let g:fzf_layout = { 'window': '-tabnew' }
+" let g:fzf_layout = { 'window': '10split enew' }
+
+" Customize fzf colors to match your color scheme
+let g:fzf_colors =
+\ { 'fg':      ['fg', 'Normal'],
+  \ 'bg':      ['bg', 'Normal'],
+  \ 'hl':      ['fg', 'Comment'],
+  \ 'fg+':     ['fg', 'CursorLine', 'CursorColumn', 'Normal'],
+  \ 'bg+':     ['bg', 'CursorLine', 'CursorColumn'],
+  \ 'hl+':     ['fg', 'Statement'],
+  \ 'info':    ['fg', 'PreProc'],
+  \ 'border':  ['fg', 'Ignore'],
+  \ 'prompt':  ['fg', 'Conditional'],
+  \ 'pointer': ['fg', 'Exception'],
+  \ 'marker':  ['fg', 'Keyword'],
+  \ 'spinner': ['fg', 'Label'],
+  \ 'header':  ['fg', 'Comment'] }
+
+" Enable per-command history.
+" CTRL-N and CTRL-P will be automatically bound to next-history and
+" previous-history instead of down and up. If you don't like the change,
+" explicitly bind the keys to down and up in your $FZF_DEFAULT_OPTS.
+let g:fzf_history_dir = '~/.local/share/fzf-history'
 
 " Ripgrep *all* the things!
 command! -bang -nargs=* Rg
@@ -299,3 +278,66 @@ command! -bang -nargs=* Rg
 " Files command with preview window
 command! -bang -nargs=? -complete=dir Files
   \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
+
+command! Buffers call fzf#run(fzf#wrap(
+    \ {'source': map(range(1, bufnr('$')), 'bufname(v:val)')}))
+
+command! -bang Buffers call fzf#run(fzf#wrap(
+    \ {'source': map(range(1, bufnr('$')), 'bufname(v:val)')}, <bang>0))
+
+let g:lightline = {
+      \ 'colorscheme': 'wombat',
+      \ 'active': {
+      \   'left': [ [ 'mode', 'paste' ],
+      \             [ 'readonly', 'filename' ] ],
+      \ },
+      \ 'component_function': {
+      \   'fileformat': 'LightlineFileformat',
+      \   'filetype': 'LightlineFiletype',
+      \   'filename': 'LightlineFilename',
+      \ },
+      \ }
+
+function! LightlineFileformat()
+  return winwidth(0) > 120 ? &fileformat : ''
+endfunction
+
+function! LightlineFiletype()
+  return winwidth(0) > 120 ? (&filetype !=# '' ? &filetype : 'no ft') : ''
+endfunction
+
+function! LightlineFilename()
+  let filename = expand('%:t') !=# '' ? expand('%:t') : '[No Name]'
+  let modified = &modified ? ' +' : ''
+  return filename . modified
+endfunction
+
+" ALE conf
+set completeopt=menu,menuone,preview,noselect,noinsert
+let g:ale_completion_enabled = 1
+
+augroup elixir
+  nnoremap <leader>r :! elixir %<cr>
+  autocmd FileType elixir nnoremap <c-]> :ALEGoToDefinition<cr>
+augroup END
+
+let g:ale_linters = {}
+let g:ale_linters.scss = ['stylelint']
+let g:ale_linters.css = ['stylelint']
+let g:ale_linters.elixir = ['elixir-ls', 'credo']
+let g:ale_linters.ruby = ['rubocop', 'ruby', 'solargraph']
+
+let g:ale_fixers = {'*': ['remove_trailing_lines', 'trim_whitespace']}
+let g:ale_fixers.javascript = ['eslint']
+let g:ale_fixers.scss = ['stylelint']
+let g:ale_fixers.css = ['stylelint']
+let g:ale_fixers.elm = ['format']
+let g:ale_fixers.ruby = ['rubocop']
+let g:ale_ruby_rubocop_executable = 'bundle'
+let g:ale_fixers.elixir = ['mix_format']
+
+let g:ale_elixir_elixir_ls_release = '/home/eric/Projects/elixir-ls/rel'
+let g:ale_sign_column_always = 1
+
+:inoremap kj <Esc>
+
