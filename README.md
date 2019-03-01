@@ -31,7 +31,7 @@ ln -s ~/Projects/dotfiles/i3config ~/.i3/config
 ln -s ~/Projects/dotfiles/i3status.conf ~/.i3status.conf
 ln -s ~/Projects/dotfiles/muttrc ~/.muttrc
 
-touch ~/.private_conf
+touch ~/.private.conf
 
 # Vundle install
 git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
