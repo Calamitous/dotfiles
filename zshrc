@@ -6,7 +6,7 @@ zstyle 'prompt' theme 'damoekri'
 
 unsetopt AUTO_CD
 
-source ~/.private_conf
+source ~/.private.conf
 
 export EDITOR=vim
 export VISUAL=vim
