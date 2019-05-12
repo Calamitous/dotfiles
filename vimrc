@@ -3,6 +3,7 @@ filetype off " Vundle required
 
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
+set rtp+=~/.fzf
 call vundle#begin()
 set rtp+=~/.fzf
 
@@ -341,3 +342,5 @@ let g:ale_sign_column_always = 1
 
 :inoremap kj <Esc>
 
+abbr srbc Pastor John Magas / Solid Rock Baptist Church
+abbr cphe! Clay-Platte Home Educators (CPHE)
