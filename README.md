@@ -2,7 +2,14 @@
 Maybe: https://github.com/junegunn/fzf#using-homebrew-or-linuxbrew
 wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb && sudo dpkg -i erlang-solutions_1.0_all.deb
 
-sudo apt-get install build-essential cmake postgresql erlang git vim xmonad dmenu zsh python-dev tmux nodejs npm elixir vim-gnome ncurses-term openssh-server powerline sqlite3 links
+# ALL
+sudo apt-get install build-essential vim zsh git tmux xmlstarlet jq openssh-server links ncurses-term
+
+#LANGS
+sudo apt-get install cmake postgresql erlang python-dev nodejs npm elixir sqlite3
+
+# GRAPHICAL
+sudo apt-get install i3 dmenu vim-gnome
 
 git clone --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
 
