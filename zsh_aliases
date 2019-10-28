@@ -5,7 +5,8 @@ alias gpo="git push origin"
 alias gco="git checkout"
 alias gcpk="git cherry-pick"
 alias gL="git log"
-alias gl="git log --all --graph --decorate=short --oneline -n 25"
+alias gl="git log --graph --decorate=short --oneline -n 25"
+alias gla="git log --all --graph --decorate=short --oneline -n 25"
 alias gb="git branch"
 alias x="exit"
 alias gx="grep-fu"
@@ -27,6 +28,7 @@ alias dc='docker-compose'
 alias dcd='docker-compose down'
 alias dcb='docker-compose build'
 alias dcu='docker-compose up'
+alias dcdu='docker-compose down && docker-compose up'
 
 alias route='bundle exec rake routes | grep '
 alias brake='bundle exec rake '
@@ -35,4 +37,5 @@ alias bpronto='bundle exec pronto run '
 alias hl="hledger"
 alias l="ls -laG"
 
+alias rgnt='rg --iglob="!spec"'
 alias rx="rg --files-with-matches"

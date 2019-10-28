@@ -20,7 +20,7 @@ export PATH=/usr/local/go/bin:$PATH
 
 # Turn off the stupid autocorrect malfeature
 unsetopt correct
-unalias rm
+# unalias rm
 source ~/.zsh_aliases
 # This seems to work regardless?
 # source ~/.bin/tmuxinator.zsh
