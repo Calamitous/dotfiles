@@ -39,3 +39,4 @@ alias l="ls -laG"
 
 alias rgnt='rg --iglob="!spec"'
 alias rx="rg --files-with-matches"
+alias start_pomo="ssh scrollodoro /home/pi/bin/start_pomo &"

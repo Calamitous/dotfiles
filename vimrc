@@ -10,8 +10,8 @@ set rtp+=~/.fzf
 Plugin 'gmarik/Vundle.vim'
 
 Plugin 'Lokaltog/vim-easymotion'
-Plugin 'amirh/HTML-AutoCloseTag'
 Plugin 'godlygeek/tabular'
+Plugin 'amirh/HTML-AutoCloseTag'
 Plugin 'itchyny/lightline.vim'
 Plugin 'jeetsukumaran/vim-buffergator'
 Plugin 'mhinz/vim-signify' " Maybe?
@@ -25,7 +25,8 @@ Plugin 'tpope/vim-speeddating'
 Plugin 'tpope/vim-surround'
 
 " Plugin 'ctrlpvim/ctrlp.vim'
-" Plugin 'elixir-lang/vim-elixir'
+" " Plugin 'elixir-lang/vim-elixir'
+" Plugin 'elixir-editors/vim-elixir'
 " Plugin 'elmcast/elm-vim'
 " Plugin 'kchmck/vim-coffee-script'
 " Plugin 'scrooloose/syntastic'

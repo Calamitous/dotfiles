@@ -3,7 +3,7 @@ Maybe: https://github.com/junegunn/fzf#using-homebrew-or-linuxbrew
 wget https://packages.erlang-solutions.com/erlang-solutions_1.0_all.deb && sudo dpkg -i erlang-solutions_1.0_all.deb
 
 # ALL
-sudo apt-get install build-essential vim zsh git tmux xmlstarlet jq openssh-server links ncurses-term
+sudo apt-get install build-essential vim zsh git tmux xmlstarlet jq openssh-server links ncurses-term datamash
 
 #LANGS
 sudo apt-get install cmake postgresql erlang python-dev nodejs npm elixir sqlite3
