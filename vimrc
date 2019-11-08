@@ -342,5 +342,19 @@ let g:ale_sign_column_always = 1
 
 :inoremap kj <Esc>
 
+func! WordProcessorMode()
+  setlocal formatoptions=1
+  setlocal noexpandtab
+  map j gj
+  map k gk
+  setlocal spell spelllang=en_us
+  set thesaurus+=/Users/sbrown/.vim/thesaurus/mthesaur.txt
+  set complete+=s
+  set formatprg=par
+  setlocal wrap
+  setlocal linebreak
+endfu
+com! WP call WordProcessorMode()
+
 abbr srbc Pastor John Magas / Solid Rock Baptist Church
 abbr cphe! Clay-Platte Home Educators (CPHE)
