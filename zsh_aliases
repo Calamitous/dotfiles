@@ -37,6 +37,7 @@ alias bpronto='bundle exec pronto run '
 alias hl="hledger"
 alias l="ls -laG"
 
-alias rgnt='rg --iglob="!spec"'
+alias rgnt='rg --iglob="!test"'
 alias rx="rg --files-with-matches"
 alias start_pomo="ssh scrollodoro /home/pi/bin/start_pomo &"
+alias whatsmyip="ifconfig | grep eth0 -C 1 | tail -n 1"

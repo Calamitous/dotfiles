@@ -19,10 +19,11 @@ Plugin 'scrooloose/nerdcommenter'
 Plugin 'scrooloose/nerdtree'
 Plugin 'sheerun/vim-polyglot'
 Plugin 'tpope/vim-commentary'
-" Plugin 'tpope/vim-fugitive'
+Plugin 'tpope/vim-fugitive'
 Plugin 'tpope/vim-repeat'
 Plugin 'tpope/vim-speeddating'
 Plugin 'tpope/vim-surround'
+Plugin 'elixir-editors/vim-elixir'
 
 " Plugin 'ctrlpvim/ctrlp.vim'
 " " Plugin 'elixir-lang/vim-elixir'
@@ -32,7 +33,6 @@ Plugin 'tpope/vim-surround'
 " Plugin 'scrooloose/syntastic'
 " Plugin 'tpope/vim-markdown'
 " Plugin 'tpope/vim-rails'
-" Plugin 'w0rp/ale' " New linting hotness
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -313,33 +313,6 @@ function! LightlineFilename()
   return filename . modified
 endfunction
 
-" ALE conf
-set completeopt=menu,menuone,preview,noselect,noinsert
-let g:ale_completion_enabled = 1
-
-augroup elixir
-  nnoremap <leader>r :! elixir %<cr>
-  autocmd FileType elixir nnoremap <c-]> :ALEGoToDefinition<cr>
-augroup END
-
-let g:ale_linters = {}
-let g:ale_linters.scss = ['stylelint']
-let g:ale_linters.css = ['stylelint']
-let g:ale_linters.elixir = ['elixir-ls', 'credo']
-let g:ale_linters.ruby = ['rubocop', 'ruby', 'solargraph']
-
-let g:ale_fixers = {'*': ['remove_trailing_lines', 'trim_whitespace']}
-let g:ale_fixers.javascript = ['eslint']
-let g:ale_fixers.scss = ['stylelint']
-let g:ale_fixers.css = ['stylelint']
-let g:ale_fixers.elm = ['format']
-let g:ale_fixers.ruby = ['rubocop']
-let g:ale_ruby_rubocop_executable = 'bundle'
-let g:ale_fixers.elixir = ['mix_format']
-
-let g:ale_elixir_elixir_ls_release = '/home/eric/Projects/elixir-ls/rel'
-let g:ale_sign_column_always = 1
-
 :inoremap kj <Esc>
 
 func! WordProcessorMode()
@@ -348,11 +321,52 @@ func! WordProcessorMode()
   map j gj
   map k gk
   setlocal spell spelllang=en_us
-  set thesaurus+=/Users/sbrown/.vim/thesaurus/mthesaur.txt
+  set thesaurus+=~/.vim/thesaurus/mthesaur.txt
   set complete+=s
   set formatprg=par
   setlocal wrap
   setlocal linebreak
+
+  set nonu
+  " set textwidth=80
+  " set wrap
+  " set spell
+
+  inoremap . .<C-g>u
+  inoremap ! !<C-g>u
+  inoremap ? ?<C-g>u
+  inoremap : :<C-g>u
+
+  set cpoptions+=J
+  " colo default
+
+  abbr dk D'khara
+  abbr dks D'khara's
+  abbr dkp D'khara.
+  abbr dksp D'khara's.
+
+  abbr drn Dr. Navarre
+  abbr drnp Dr. Navarre
+  abbr drns Dr. Navarre's
+
+  abbr lim Little Timmy
+  abbr lim Little Timmy
+
+  abbr mmd Mrs. Meade
+  abbr mmds Mrs. Meade's
+
+  abbr bw Battle Wagon
+  abbr bwc Battle Wagon,
+  abbr bwp Battle Wagon.
+  abbr vw Battle Wagon
+  abbr vwc Battle Wagon,
+  abbr vwp Battle Wagon.
+
+  abbr rf Riotfish
+  abbr ov Oliver
+  abbr ovp Oliver.
+  abbr dx Daugereaux
+  abbr fl Fleer
 endfu
 com! WP call WordProcessorMode()
 
