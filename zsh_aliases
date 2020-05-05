@@ -41,3 +41,6 @@ alias rgnt='rg --iglob="!test"'
 alias rx="rg --files-with-matches"
 alias start_pomo="ssh scrollodoro /home/pi/bin/start_pomo &"
 alias whatsmyip="ifconfig | grep eth0 -C 1 | tail -n 1"
+alias rip_sermon_cd='cd ~/Sermons && OUTPUTTYPE="vorbis,mp3" abcde -nx && festival -b  "(SayText \"Process complete\")" || festival -b  "(SayText \"Process failed\")"'
+
+alias logit="echo \[`date`\] $USER@`hostname` $@ >> ~/logit.log"
