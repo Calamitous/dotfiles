@@ -44,3 +44,5 @@ alias whatsmyip="ifconfig | grep eth0 -C 1 | tail -n 1"
 alias rip_sermon_cd='cd ~/Sermons && OUTPUTTYPE="vorbis,mp3" abcde -nx && festival -b  "(SayText \"Process complete\")" || festival -b  "(SayText \"Process failed\")"'
 
 alias logit="echo \[`date`\] $USER@`hostname` $@ >> ~/logit.log"
+alias log_clear_jq="sudo truncate -s 0 $(docker inspect --format='{{.LogPath}}' cmp_job_queue_api_1)"
+alias rebuild_app='recompile_api && web_ui_server'
