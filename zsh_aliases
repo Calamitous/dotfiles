@@ -42,7 +42,13 @@ alias rx="rg --files-with-matches"
 alias start_pomo="ssh scrollodoro /home/pi/bin/start_pomo &"
 alias whatsmyip="ifconfig | grep eth0 -C 1 | tail -n 1"
 alias rip_sermon_cd='cd ~/Sermons && OUTPUTTYPE="vorbis,mp3" abcde -nx && festival -b  "(SayText \"Process complete\")" || festival -b  "(SayText \"Process failed\")"'
+alias watch_dvd='mplayer dvdnav:// -mouse-movements -dvd-device '
 
 alias logit="echo \[`date`\] $USER@`hostname` $@ >> ~/logit.log"
-alias log_clear_jq="sudo truncate -s 0 $(docker inspect --format='{{.LogPath}}' cmp_job_queue_api_1)"
+# alias log_clear_jq="sudo truncate -s 0 $(docker inspect --format='{{.LogPath}}' cmp_job_queue_api_1)"
 alias rebuild_app='recompile_api && web_ui_server'
+
+alias weather="curl http://wttr.in/Kansas%20City,%20United%20States"
+alias flush_dns_cache="sudo service dnsmasq restart && sudo systemctl is-active dnsmasq"
+alias bbs_term="rxvt -fn vga11x19 -bg black -fg white"
+alias df_short="df | grep --color=never \"\(sd[ab]1\|Filesystem\)\""
