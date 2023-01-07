@@ -35,7 +35,7 @@ alias brake='bundle exec rake '
 alias bpronto='bundle exec pronto run '
 
 alias hl="hledger"
-alias l="ls -laG"
+alias l="ls -laGh"
 
 alias rgnt='rg --iglob="!test"'
 alias rx="rg --files-with-matches"
@@ -52,3 +52,6 @@ alias weather="curl http://wttr.in/Kansas%20City,%20United%20States"
 alias flush_dns_cache="sudo service dnsmasq restart && sudo systemctl is-active dnsmasq"
 alias bbs_term="rxvt -fn vga11x19 -bg black -fg white"
 alias df_short="df | grep --color=never \"\(sd[ab]1\|Filesystem\)\""
+alias fix_keyboard_caps="setxkbmap -option caps:escape"
+alias pbpaste="xclip -selection clipboard -o"
+alias pbcopy="xclip -selection clipboard -i"

@@ -1,6 +1,6 @@
 [user]
-  name = Eric Budd
-  email = eric.b.budd@protonmail.com
+  email = other.dust0853@pencricket.com
+  name = Eric B. Budd
 [core]
   editor = vim
   pager = less -x4
@@ -8,10 +8,6 @@
   commentchar = "#"
 [push]
   default = current
-[color]
-  status = auto
-  branch = auto
-  diff = auto
 [color "branch"]
   current = red reverse
   local = blue
@@ -35,7 +31,5 @@
   lg = !"git lg1"
   co = checkout
   st = status
-[http]
-	postBuffer = 524288000
 [help]
 	autocorrect = 20
