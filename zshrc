@@ -12,6 +12,7 @@ export VISUAL=vim
 export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 export PATH=~/.local/bin:$PATH
 export PATH=~/bin:$PATH
+export PATH=~/.emacs.d/bin:$PATH
 export PATH=/usr/local/go/bin:$PATH
 # export PATH=$PATH:/Users/ericbudd/.rbenv/versions/2.2.0/lib/ruby/gems/2.2.0/gems/tmuxinator-0.6.10/bin
 
@@ -35,6 +36,7 @@ zmodload -i zsh/complist
 fpath=(/usr/local/share/zsh-completions $fpath)
 
 export HISTFILE=~/.zsh_history
+export SAVEHIST=100
 
 export LEDGER_FILE=~/Projects/personal_finances/hledger.journal
 
@@ -43,3 +45,9 @@ bindkey "^R" history-incremental-search-backward
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*"'
+
+export GOPATH=$HOME/golang
+export GOROOT=/usr/local/opt/go/libexec
+export PATH=$PATH:$GOPATH/bin
+export PATH=$PATH:$GOROOT/bin
+export PATH="$PATH:/usr/local/protobuf/bin"

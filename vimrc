@@ -17,6 +17,7 @@ Plugin 'jeetsukumaran/vim-buffergator'
 " Plugin 'mhinz/vim-signify' " Maybe?
 Plugin 'scrooloose/nerdcommenter'
 Plugin 'scrooloose/nerdtree'
+Plugin 'fatih/vim-go'
 Plugin 'sheerun/vim-polyglot'
 Plugin 'tpope/vim-commentary'
 Plugin 'tpope/vim-fugitive'
@@ -222,8 +223,8 @@ endif
 
 set colorcolumn=81,121
 
-set listchars=tab:>~,nbsp:_,trail:.
-set list
+set listchars=nbsp:×,trail:. " tab:>>,,eol:⏎
+set nolist
 
 " fzf
 " This is the default extra key bindings
@@ -372,3 +373,11 @@ com! WP call WordProcessorMode()
 
 abbr srbc Pastor John Magas / Solid Rock Baptist Church
 abbr cphe! Clay-Platte Home Educators (CPHE)
+
+runtime macros/matchit.vim
+
+" let g:polyglot_disabled = ['go']
+abbr {} {<CR><Tab><CR>}
+abbr errck if err != nil {<CR>return<CR>}
+abbr swe software engineer
+abbr SWE Software Engineer
