@@ -30,11 +30,6 @@ bindkey "^X^E" edit-command-line
 export TERM='xterm-256color'
 # setxkbmap -option caps:escape
 
-autoload -U compinit && compinit
-zmodload -i zsh/complist
-
-fpath=(/usr/local/share/zsh-completions $fpath)
-
 export HISTFILE=~/.zsh_history
 export SAVEHIST=100
 
@@ -51,3 +46,25 @@ export GOROOT=/usr/local/opt/go/libexec
 export PATH=$PATH:$GOPATH/bin
 export PATH=$PATH:$GOROOT/bin
 export PATH="$PATH:/usr/local/protobuf/bin"
+
+. "$HOME/.asdf/asdf.sh"
+
+# append completions to fpath
+fpath=(${ASDF_DIR}/completions $fpath)
+
+zmodload -i zsh/complist
+
+fpath=(/usr/local/share/zsh-completions $fpath)
+
+# Highlight the current autocomplete option
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+
+# Fix SSH Config Host Autocomplete on macos
+zstyle ':completion:*:(s|ssh|scp|ftp|sftp):*' hosts $hosts
+zstyle ':completion:*:(s|ssh|scp|ftp|sftp):*' users $users
+
+# Allow for autocomplete to be case insensitive
+zstyle ':completion:*' matcher-list '' 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' '+l:|?=** r:|?=**'
+
+# Initialize the autocompletion
+autoload -Uz compinit && compinit -i
