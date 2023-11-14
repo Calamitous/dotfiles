@@ -4,7 +4,7 @@ filetype off " Vundle required
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
-set rtp+=~/.fzf
+" set rtp+=~/.fzf
 
 " let Vundle manage Vundle, required
 Plugin 'gmarik/Vundle.vim'
@@ -25,6 +25,7 @@ Plugin 'tpope/vim-repeat'
 Plugin 'tpope/vim-speeddating'
 Plugin 'tpope/vim-surround'
 Plugin 'elixir-editors/vim-elixir'
+Plugin 'junegunn/fzf'
 
 " Plugin 'ctrlpvim/ctrlp.vim'
 " " Plugin 'elixir-lang/vim-elixir'

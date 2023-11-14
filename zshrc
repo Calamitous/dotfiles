@@ -47,7 +47,7 @@ export PATH=$PATH:$GOPATH/bin
 export PATH=$PATH:$GOROOT/bin
 export PATH="$PATH:/usr/local/protobuf/bin"
 
-. "$HOME/.asdf/asdf.sh"
+# . "$HOME/.asdf/asdf.sh"
 
 # append completions to fpath
 fpath=(${ASDF_DIR}/completions $fpath)
