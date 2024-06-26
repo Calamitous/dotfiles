@@ -11,7 +11,7 @@ Plugin 'gmarik/Vundle.vim'
 
 Plugin 'Lokaltog/vim-easymotion'
 Plugin 'godlygeek/tabular'
-Plugin 'amirh/HTML-AutoCloseTag'
+" Plugin 'amirh/HTML-AutoCloseTag'
 Plugin 'itchyny/lightline.vim'
 Plugin 'jeetsukumaran/vim-buffergator'
 " Plugin 'mhinz/vim-signify' " Maybe?
