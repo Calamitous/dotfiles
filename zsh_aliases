@@ -12,6 +12,8 @@ alias x="exit"
 alias gx="grep-fu"
 alias pglog='tail -f /usr/local/var/postgres/server.log'
 alias qcurl="curl --fail --silent --show-error"
+alias careful_pull="git stash && git pull --rebase && git stash pop"
+alias safe_gpr="git stash && git pull --rebase && git stash pop"
 
 alias tmls="tmux list-sessions"
 alias tmat="tmux attach -t"
@@ -35,7 +37,7 @@ alias brake='bundle exec rake '
 alias bpronto='bundle exec pronto run '
 
 alias hl="hledger"
-alias l="ls -laGh"
+alias l="ls -laGh --color"
 
 alias rgnt='rg --iglob="!test"'
 alias rx="rg --files-with-matches"
@@ -46,7 +48,6 @@ alias rip_sermon_cd='cd ~/Sermons && OUTPUTTYPE="vorbis,mp3" abcde -nx && festiv
 alias watch_dvd='mplayer dvdnav:// -mouse-movements -dvd-device '
 
 alias logit="echo \[`date`\] $USER@`hostname` $@ >> ~/logit.log"
-# alias log_clear_jq="sudo truncate -s 0 $(docker inspect --format='{{.LogPath}}' cmp_job_queue_api_1)"
 alias rebuild_app='recompile_api && web_ui_server'
 
 alias weather="curl http://wttr.in/Kansas%20City,%20United%20States"
