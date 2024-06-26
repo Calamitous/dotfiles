@@ -26,6 +26,7 @@ Plugin 'tpope/vim-speeddating'
 Plugin 'tpope/vim-surround'
 Plugin 'elixir-editors/vim-elixir'
 Plugin 'junegunn/fzf'
+Plugin 'ledger/vim-ledger'
 
 " Plugin 'ctrlpvim/ctrlp.vim'
 " " Plugin 'elixir-lang/vim-elixir'
@@ -382,3 +383,9 @@ abbr {} {<CR><Tab><CR>}
 abbr errck if err != nil {<CR>return<CR>}
 abbr swe software engineer
 abbr SWE Software Engineer
+
+let g:ledger_maxwidth = 100
+let g:ledger_fuzzy_account_completion = 1
+let g:ledger_align_at=76
+let g:ledger_is_hledger = v:true
+let g:ledger_default_commodity = '$'
