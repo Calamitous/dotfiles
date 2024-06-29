@@ -1,6 +1,9 @@
 alias change_aliases="vim ~/.zsh_aliases; source ~/.zsh_aliases"
 alias gst="git status"
 alias gpr="git pull --rebase"
+alias gpr_submodule="git submodule update --init --recursive"
+alias safe_gpr="git stash && git pull --rebase && git stash pop"
+alias full_pull="git stash && git pull --rebase && git submodule update --init --recursive && git stash pop"
 alias gpo="git push origin"
 alias gco="git checkout"
 alias gcpk="git cherry-pick"
@@ -42,9 +45,9 @@ alias l="ls -laGh --color"
 alias rgnt='rg --iglob="!test"'
 alias rx="rg --files-with-matches"
 
-alias start_pomo="ssh scrollodoro /home/pi/bin/start_pomo &"
+# alias start_pomo="ssh scrollodoro /home/pi/bin/start_pomo &"
 alias whatsmyip="ifconfig | grep eth0 -C 1 | tail -n 1"
-alias rip_sermon_cd='cd ~/Sermons && OUTPUTTYPE="vorbis,mp3" abcde -nx && festival -b  "(SayText \"Process complete\")" || festival -b  "(SayText \"Process failed\")"'
+# alias rip_sermon_cd='cd ~/Sermons && OUTPUTTYPE="vorbis,mp3" abcde -nx && festival -b  "(SayText \"Process complete\")" || festival -b  "(SayText \"Process failed\")"'
 alias watch_dvd='mplayer dvdnav:// -mouse-movements -dvd-device '
 
 alias logit="echo \[`date`\] $USER@`hostname` $@ >> ~/logit.log"

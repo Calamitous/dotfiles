@@ -1,12 +1,12 @@
+" --- Vundle BEGIN
 set nocompatible " Vundle required
 filetype off " Vundle required
 
 " set the runtime path to include Vundle and initialize
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
-" set rtp+=~/.fzf
 
-" let Vundle manage Vundle, required
+" Let Vundle manage Vundle, required
 Plugin 'gmarik/Vundle.vim'
 
 Plugin 'Lokaltog/vim-easymotion'
@@ -28,17 +28,8 @@ Plugin 'elixir-editors/vim-elixir'
 Plugin 'junegunn/fzf'
 Plugin 'ledger/vim-ledger'
 
-" Plugin 'ctrlpvim/ctrlp.vim'
-" " Plugin 'elixir-lang/vim-elixir'
-" Plugin 'elixir-editors/vim-elixir'
-" Plugin 'elmcast/elm-vim'
-" Plugin 'kchmck/vim-coffee-script'
-" Plugin 'scrooloose/syntastic'
-" Plugin 'tpope/vim-markdown'
-" Plugin 'tpope/vim-rails'
-
 " All of your Plugins must be added before the following line
-call vundle#end()            " required
+call vundle#end()
 
 filetype plugin indent on    " required
 " Brief help
@@ -50,7 +41,9 @@ filetype plugin indent on    " required
 " see :h vundle for more details or wiki for FAQ
 " Put your non-Plugin stuff after this line
 
-let mapleader=' '
+" --- Vundle END
+
+" --- Settings BEGIN
 
 " Autoindent with two spaces, always expand tabs
 set tabstop=2
@@ -66,13 +59,54 @@ set history=1000
 highlight clear SignColumn " Don't highlight left columns
 highlight clear LineNr
 
-set showmatch " Highlight match braces
-set incsearch " Search as you type
-set ignorecase " Case insensitive search
-set smartcase " ...except when we put a cap in there
+set showmatch   " Highlight match braces
+set incsearch   " Search as you type
+set ignorecase  " Case insensitive search
+set smartcase   " ...except when we put a cap in there
 set scrolloff=5 " Minimum lines above/below cursor
-set nowrap " Don't wrap long lines
-" set paste " Make paste handling rational
+set nowrap      " Don't wrap long lines
+" set paste       " Make paste handling rational, but breaks auto-indentation
+
+set noshowmode
+
+syntax enable
+
+set background=dark
+" colorscheme dracula
+" colorscheme zenburn
+" colorscheme railscasts
+" colorscheme elflord
+" colorscheme solarized
+" colorscheme industry
+colorscheme solarized8_high
+
+scriptencoding utf-8
+set encoding=utf-8
+
+" File layouts
+set noswapfile
+set backup
+set undofile
+set undolevels=1000
+set undoreload=10000
+
+
+" GUI options
+set guioptions-=m
+set guioptions-=T
+set guioptions-=r
+
+if !has('gui_running')
+  set t_Co=256
+endif
+
+set colorcolumn=81,121
+
+" list characters
+set listchars=nbsp:×,trail:. " tab:>>,,eol:⏎
+set nolist
+
+" --- Settings END
 
 " Remove trailing whitespace on save
 function! <SID>StripTrailingWhitespaces()
@@ -93,64 +127,6 @@ if has ('clipboard')
     set clipboard=unnamed
   endif
 endif
-
-" Solarized
-syntax enable
-set background=dark
-" colorscheme dracula
-" colorscheme zenburn
-" colorscheme railscasts
-colorscheme elflord
-" colorscheme solarized
-" colorscheme industry
-
-map <Leader>l :set background=light<CR>
-map <Leader>d :set background=dark<CR>
-
-" Fugitive
-map <Leader>gb :Gblame<CR>
-map <Leader>gs :Gstatus<CR>
-map <Leader>gc :Gcommit<CR>
-map <Leader>gp :Gpush<CR>
-
-" Syntastic
-" let g:syntastic_mode_map = { 'mode': 'active',
-                            " \ 'active_filetypes': ['ruby', 'coffee', 'javascript', 'json'],
-                            " \ 'passive_filetypes': ['html', 'handlebars'] }
-
-" CoffeeWatch
-set suffixesadd+=.coffee
-map <Leader>cw :CoffeeWatch<CR>
-map <Leader>cr :CoffeeRun<CR>
-
-" NERDTree
-map <Leader>e :NERDTreeFind<CR>
-let NERDTreeShowBookmarks=1
-let NERDTreeQuitOnOpen=1
-let NERDTreeShowHidden=1
-
-" Tabular
-nmap <Leader>a= :Tabularize /=<CR>
-vmap <Leader>a= :Tabularize /=<CR>
-nmap <Leader>a> :Tabularize /=><CR>
-vmap <Leader>a> :Tabularize /=><CR>
-nmap <Leader>a<Bar> :Tabularize /<Bar><CR>
-vmap <Leader>a<Bar> :Tabularize /<Bar><CR>
-nmap <Leader>a: :Tabularize /:<CR>
-vmap <Leader>a: :Tabularize /:<CR>
-nmap <Leader>a, :Tabularize /,<CR>
-vmap <Leader>a, :Tabularize /,<CR>
-
-nmap <Leader>o :FZF<CR>
-
-set noshowmode
-
-" ctrlp
-let g:ctrlp_user_command=['.git/', 'cd %s && git ls-files --exclude-standard -co']
-let g:ctrlp_extensions=['tag', 'buffertag', 'quickfix', 'line', 'changes']
-let g:ctrlp_custom_ignore={
-  \ 'dir': '(node_modules)|(\v[\/]\.(git|hg|svn)$)'
-  \ }
 
 " buffergator
 let g:buffergator_sort_regime='mru'
@@ -177,13 +153,6 @@ autocmd FileType pgsql set omnifunc=sqlcomplete#Complete
 
 " set file type for Postgres for SQL files
 au BufNewFile,BufRead *.sql set ft=pgsql
-
-" File layouts
-set noswapfile
-set backup
-set undofile
-set undolevels=1000
-set undoreload=10000
 
 function! InitializeDirectories()
   let parent = $HOME . '/.vim/'
@@ -212,23 +181,9 @@ function! InitializeDirectories()
 endfunction
 call InitializeDirectories()
 
-scriptencoding utf-8
-set encoding=utf-8
+" --- FZF BEGIN
 
-set guioptions-=m
-set guioptions-=T
-set guioptions-=r
-
-if !has('gui_running')
-  set t_Co=256
-endif
-
-set colorcolumn=81,121
-
-set listchars=nbsp:×,trail:. " tab:>>,,eol:⏎
-set nolist
-
-" fzf
+let $FZF_DEFAULT_COMMAND = 'rg --files --hidden --follow --glob "!.git/*"'
 " This is the default extra key bindings
 " let g:fzf_action = { 'ctrl-t': 'tab split', 'ctrl-x': 'split', 'ctrl-v': 'vsplit' }
 
@@ -302,6 +257,8 @@ let g:lightline = {
       \ },
       \ }
 
+" --- FZF END
+
 function! LightlineFileformat()
   return winwidth(0) > 120 ? &fileformat : ''
 endfunction
@@ -315,8 +272,6 @@ function! LightlineFilename()
   let modified = &modified ? ' +' : ''
   return filename . modified
 endfunction
-
-:inoremap kj <Esc>
 
 func! WordProcessorMode()
   setlocal formatoptions=1
@@ -342,43 +297,9 @@ func! WordProcessorMode()
 
   set cpoptions+=J
   " colo default
-
-  abbr dk D'khara
-  abbr dks D'khara's
-  abbr dkp D'khara.
-  abbr dksp D'khara's.
-
-  abbr drn Dr. Navarre
-  abbr drnp Dr. Navarre
-  abbr drns Dr. Navarre's
-
-  abbr lim Little Timmy
-  abbr lim Little Timmy
-
-  abbr mmd Mrs. Meade
-  abbr mmds Mrs. Meade's
-
-  abbr bw Battle Wagon
-  abbr bwc Battle Wagon,
-  abbr bwp Battle Wagon.
-  abbr vw Battle Wagon
-  abbr vwc Battle Wagon,
-  abbr vwp Battle Wagon.
-
-  abbr rf Riotfish
-  abbr ov Oliver
-  abbr ovp Oliver.
-  abbr dx Daugereaux
-  abbr fl Fleer
 endfu
 com! WP call WordProcessorMode()
 
-abbr srbc Pastor John Magas / Solid Rock Baptist Church
-abbr cphe! Clay-Platte Home Educators (CPHE)
-
-runtime macros/matchit.vim
-
-" let g:polyglot_disabled = ['go']
 abbr {} {<CR><Tab><CR>}
 abbr errck if err != nil {<CR>return<CR>}
 abbr swe software engineer
@@ -389,3 +310,44 @@ let g:ledger_fuzzy_account_completion = 1
 let g:ledger_align_at=76
 let g:ledger_is_hledger = v:true
 let g:ledger_default_commodity = '$'
+
+let mapleader=' '
+
+" Fugitive
+map <Leader>gb :Git blame<CR>
+map <Leader>gs :Git status<CR>
+map <Leader>gc :Git commit<CR>
+map <Leader>gp :Git push<CR>
+
+" NERDTree
+map <Leader>e :NERDTreeFind<CR>
+let NERDTreeShowBookmarks=1
+let NERDTreeQuitOnOpen=1
+let NERDTreeShowHidden=1
+
+" Tabular
+nmap <Leader>a= :Tabularize /=<CR>
+vmap <Leader>a= :Tabularize /=<CR>
+nmap <Leader>a> :Tabularize /=><CR>
+vmap <Leader>a> :Tabularize /=><CR>
+nmap <Leader>a<Bar> :Tabularize /<Bar><CR>
+vmap <Leader>a<Bar> :Tabularize /<Bar><CR>
+nmap <Leader>a: :Tabularize /:<CR>
+vmap <Leader>a: :Tabularize /:<CR>
+nmap <Leader>a, :Tabularize /,<CR>
+vmap <Leader>a, :Tabularize /,<CR>
+
+" FZF
+nmap <Leader>o :FZF<CR>
+
+" Etc. mappings
+:inoremap kj <Esc>
+
+map <Leader>l :set background=light<CR>
+map <Leader>d :set background=dark<CR>
+map <Leader>f oendk0f)lxf:cw<CR>
+map <Leader>F :set background=dark<CR>
+
+map <leader>i OIO.inspect()<Esc>==$i
+map <leader>I O\|> IO.inspect()<Esc>==$
+

@@ -41,10 +41,10 @@ bindkey "^R" history-incremental-search-backward
 
 export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*"'
 
-export GOPATH=$HOME/golang
-export GOROOT=/usr/local/opt/go/libexec
+# export GOPATH=$HOME/golang
+# export GOROOT=/usr/local/opt/go/libexec
 export PATH=$PATH:$GOPATH/bin
-export PATH=$PATH:$GOROOT/bin
+# export PATH=$PATH:$GOROOT/bin
 export PATH="$PATH:/usr/local/protobuf/bin"
 
 # . "$HOME/.asdf/asdf.sh"
