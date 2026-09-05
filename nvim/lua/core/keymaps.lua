@@ -88,6 +88,11 @@ map("n", "<Leader>kg", "<Cmd>Obsidian search<CR>", { desc = "Search notes (grep)
 map("n", "<Leader>k#", "<Cmd>Obsidian tags<CR>", { desc = "Tags" })
 map("n", "<Leader>ko", "<Cmd>Obsidian open<CR>", { desc = "Open in Obsidian app" })
 
+-- Manuscript
+map("n", "<Leader>mc", "<Cmd>Compile<CR>", { desc = "Compile manuscript" })
+map("n", "<Leader>mk", "<Cmd>CompileCheck<CR>", { desc = "Compile check (diff only)" })
+map("n", "<Leader>ml", "<Cmd>CompileList<CR>", { desc = "List drafts" })
+
 -- Checkboxes
 map("n", "<Leader>l", "<Cmd>CheckboxToggle<CR>", { desc = "Toggle checkbox" })
 map("v", "<Leader>l", ":CheckboxToggle<CR>", { desc = "Toggle checkboxes" })

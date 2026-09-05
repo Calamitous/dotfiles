@@ -232,6 +232,49 @@ Two rules that matter:
    and plugin state in memory and flushes on change, so external writes can be
    silently clobbered. Read them; don't write them.
 
+## Compiling a manuscript
+
+`../bin/compile.rb` builds a manuscript from a Longform draft, replacing the
+Longform compile chain. It's usable from a shell on its own; nvim just fronts it.
+
+| Key | Command | Does |
+|---|---|---|
+| `<Leader>mc` | `:Compile` | build the manuscript |
+| `<Leader>mk` | `:CompileCheck` | build **without writing**, show the diff |
+| `<Leader>ml` | `:CompileList` | drafts in this vault (`*` = selected) |
+
+From a shell: `compile.rb`, `--list`, `--check`, `--docx`, `--select PATH`.
+
+**Which draft?** In order: an `Index.md` above the current file, then this
+tool's own `.compile-draft`, then Longform's remembered selection. So a vault
+with several books (A&A has five drafts) compiles the one you're editing.
+
+**Configuration** goes in `Index.md` as a `compile:` key *sibling* to
+`longform:` -- never nested inside it, because Longform rebuilds that key
+wholesale on every write:
+
+```yaml
+longform:
+  scenes: [...]          # Obsidian still drives this
+compile:
+  output: My Book.md
+  steps:
+    - strip_frontmatter
+    - remove_links
+    - crunch_comments
+    - prepend_title: "# Chapter $title"
+    - concatenate: "\n\n---\n\n"
+    - msword_hrs
+```
+
+Reorder steps by moving lines. Omit the block entirely and the Longform default
+workflow is used. A vault can add its own steps in `<vault>/bin/compile_steps.rb`,
+so custom behaviour is versioned with the book rather than duplicated here.
+
+**It never writes Longform's files** -- not `Index.md`, not anything under
+`.obsidian/`. Obsidian caches those in memory and flushes on change, so an
+outside write can be silently clobbered. Read-only in that direction, always.
+
 ## Saving doesn't touch what you didn't edit
 
 Opening a chapter and saving it produces **no** git diff. Two defaults had to

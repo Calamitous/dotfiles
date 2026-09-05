@@ -16,6 +16,7 @@ function M.setup()
   require("writing.reading").setup()
   require("writing.sidebar").setup()
   require("writing.checkbox").setup()
+  require("writing.compile").setup()
 
   vim.api.nvim_create_user_command("WritingHelp", function()
     local rows = {
@@ -43,6 +44,11 @@ function M.setup()
       { "<Leader>l", ":CheckboxToggle  check/uncheck (or add) a checkbox" },
       { "zg", "            add word to this vault's dictionary" },
       { "]s / [s", "      next / previous misspelling" },
+      { "", "" },
+      { "", "MANUSCRIPT" },
+      { "<Leader>mc", ":Compile        build the manuscript" },
+      { "<Leader>mk", ":CompileCheck   build without writing; show the diff" },
+      { "<Leader>ml", ":CompileList    drafts in this vault" },
       { "", "" },
       { "", "COUNTS" },
       { "<Leader>wc", ":WordCount       this buffer" },
