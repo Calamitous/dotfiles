@@ -39,6 +39,11 @@ o.clipboard = "unnamedplus"
 -- `noselect` keeps you in control of what gets inserted.
 o.completeopt = { "menu", "menuone", "noselect", "popup" }
 
+-- Don't add a trailing newline to files that lack one. Obsidian writes files
+-- without a final newline; adding one makes every first save in nvim show up
+-- as a git change even when nothing was edited.
+o.fixeol = false
+
 o.swapfile = false
 o.backup = true
 o.undofile = true
@@ -57,9 +62,16 @@ for dir, opt in pairs({ backup = "backupdir", undo = "undodir", view = "viewdir"
 end
 
 -- Strip trailing whitespace on save, preserving cursor position.
+--
+-- NOT in markdown: two trailing spaces are a hard line break there, so
+-- stripping them silently changes how the document renders. It also makes
+-- untouched prose files show up as modified in git.
 vim.api.nvim_create_autocmd("BufWritePre", {
   group = vim.api.nvim_create_augroup("StripTrailingWhitespace", { clear = true }),
-  callback = function()
+  callback = function(args)
+    if vim.bo[args.buf].filetype == "markdown" then
+      return
+    end
     local pos = vim.api.nvim_win_get_cursor(0)
     vim.cmd([[keeppatterns %s/\s\+$//e]])
     pcall(vim.api.nvim_win_set_cursor, 0, pos)

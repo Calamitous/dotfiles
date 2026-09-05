@@ -232,6 +232,20 @@ Two rules that matter:
    and plugin state in memory and flushes on change, so external writes can be
    silently clobbered. Read them; don't write them.
 
+## Saving doesn't touch what you didn't edit
+
+Opening a chapter and saving it produces **no** git diff. Two defaults had to
+change for that:
+
+- **`fixeol` is off.** Obsidian writes files without a trailing newline; nvim
+  would otherwise add one, so the first save of every file showed up as a
+  change.
+- **Trailing whitespace is not stripped in markdown.** Two trailing spaces are
+  a hard line break in markdown, so stripping them silently alters rendering.
+  It still strips in other filetypes.
+
+Verified against real chapters: open, `:wq`, byte-identical.
+
 ## Plugins
 
 Managed by `lazy.nvim`; versions pinned in `lazy-lock.json` (committed).
