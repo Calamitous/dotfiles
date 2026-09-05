@@ -28,6 +28,28 @@ Both pickers run the real `fzf` binary in a floating window, scoped to the
 vsplit / split / tab, `Tab` multi-selects, `Esc` aborts. Matching is
 case-insensitive; flip `M.ignore_case` in `lua/writing/find.lua` for smart-case.
 
+### Wikilinks (obsidian.nvim)
+| Key | Command | Does |
+|---|---|---|
+| `<Leader>kr` | `:Obsidian rename` | **rename a note and rewrite every link to it** |
+| `<Leader>kf` | `:Obsidian follow_link` | follow the `[[link]]` under the cursor |
+| `<Leader>kb` | `:Obsidian backlinks` | what links here |
+| `<Leader>ks` | `:Obsidian quick_switch` | jump to a note by title |
+| `<Leader>kn` | `:Obsidian new` | new note |
+| `<Leader>kt` | `:Obsidian toc` | table of contents |
+
+Rename rewrites `[[Note]]`, `[[Note|alias]]`, `[[Note#heading]]`, `[[Note#^block]]`
+and `![[Note]]` embeds across the vault. **Use `<Leader>kr` and answer the
+prompt** -- `:Obsidian rename Two Words` fails, because the subcommand takes a
+single argument.
+
+Renaming any other way -- `mv`, the `<Leader>e` sidebar, a file manager -- will
+**not** update links. That's equally true of Obsidian itself.
+
+Typing `[[` offers completions from the built-in `obsidian-ls` LSP; no separate
+completion engine is needed. The LSP only attaches inside a registered
+workspace, i.e. a directory under `~/Writing` containing `.obsidian/`.
+
 ### Writing
 | Key | Command | Does |
 |---|---|---|
@@ -166,6 +188,22 @@ Two rules that matter:
 2. **Never write Longform's files from outside Obsidian.** Obsidian caches file
    and plugin state in memory and flushes on change, so external writes can be
    silently clobbered. Read them; don't write them.
+
+## Plugins
+
+Managed by `lazy.nvim`; versions pinned in `lazy-lock.json` (committed).
+`:Lazy` for the UI, `:Lazy update` to update -- then commit the new lock file.
+
+| Plugin | For |
+|---|---|
+| `obsidian.nvim` | wikilinks, rename-with-link-rewrite, `[[` completion |
+| `render-markdown.nvim` | in-buffer rendering of headings, lists, code, tables |
+| `plenary.nvim` | dependency of obsidian.nvim |
+
+Two obsidian.nvim settings are load-bearing and should not be changed:
+`frontmatter.enabled = false` (otherwise it rewrites frontmatter on save, which
+would fight Longform's `longform:` block) and `ui.enable = false`
+(render-markdown owns rendering; running both double-renders every line).
 
 ## Requirements
 

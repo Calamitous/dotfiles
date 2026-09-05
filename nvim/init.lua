@@ -6,6 +6,7 @@
 
 require("core.options")
 require("core.keymaps")
+require("core.lazy")
 require("core.reload").setup()
 require("core.highlights").setup()
 require("writing").setup()
