@@ -285,6 +285,29 @@ from the craft analysis of BBaS:
 
 Deleting a noisy rule is the intended workflow, not a failure.
 
+**Using the list as a checklist.** In the quickfix window, `x` marks the entry
+under the cursor as *won't do*: it drops off the list and stays off on future
+runs. `:ValeUndismissAll` clears them.
+
+| Key | Does |
+|---|---|
+| `<CR>` | jump to the entry |
+| `x` | won't do -- dismiss permanently |
+| `]q` / `[q` | next / previous entry without leaving the file |
+
+Dismissals live in `<vault>/.vale-dismissed`, so they're versioned with the book
+and shared across machines. They're keyed on the **rule plus the text of the
+line**, not the line number -- so:
+
+- editing elsewhere in the chapter doesn't resurrect them,
+- but **rewriting that line brings the suggestion back**, because the sentence
+  you dismissed no longer exists.
+
+For a permanent, in-prose exception, Vale's own comments also work:
+`<!-- vale Prose.Hedges = NO -->` ... `<!-- vale Prose.Hedges = YES -->`. Those
+travel with the text and are stripped by `compile.rb`, so they never reach the
+manuscript.
+
 **Two Vale gotchas**, both of which silently match nothing rather than erroring:
 `tokens` are wrapped in `\b` word boundaries, so a pattern starting with a
 quotation mark needs `nonword: true`; and `raw` entries are **concatenated**

@@ -97,6 +97,8 @@ map("n", "<Leader>a", vim.lsp.buf.code_action, { desc = "Code action (accept fix
 -- Prose linting (Vale)
 map("n", "<Leader>vv", "<Cmd>Vale<CR>", { desc = "Lint this file" })
 map("n", "<Leader>vd", "<Cmd>ValeDraft<CR>", { desc = "Lint the whole draft" })
+map("n", "]q", "<Cmd>cnext<CR>", { desc = "Next quickfix entry" })
+map("n", "[q", "<Cmd>cprevious<CR>", { desc = "Previous quickfix entry" })
 
 -- Manuscript
 map("n", "<Leader>mc", "<Cmd>Compile<CR>", { desc = "Compile manuscript" })

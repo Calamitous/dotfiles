@@ -72,6 +72,94 @@ MinAlertLevel = suggestion
 BasedOnStyles = Prose
 ]]
 
+-- Dismissals ----------------------------------------------------------------
+--
+-- A "won't do" list, so a Vale run reads as a checklist rather than the same
+-- suggestions every time. Entries are keyed on the RULE plus the TEXT OF THE
+-- LINE, not the line number -- so a dismissal survives edits elsewhere in the
+-- chapter, but a line you actually rewrite is re-evaluated, which is what you
+-- want.
+--
+-- Stored in <vault>/.vale-dismissed, one record per line, so it's versioned
+-- with the book and shared across machines.
+
+M.dismiss_file = ".vale-dismissed"
+
+--- Vault of the most recent run. The quickfix window has no filename, so
+--- vault.root() can't resolve from it once `copen` has taken the cursor.
+M.last_root = nil
+
+local function dismiss_path(root)
+  return root .. "/" .. M.dismiss_file
+end
+
+local function key(check, line_text)
+  return check .. "\t" .. vim.fn.sha256(vim.trim(line_text or "")):sub(1, 16)
+end
+
+local function load_dismissed(root)
+  local path = dismiss_path(root)
+  local set = {}
+  if vim.fn.filereadable(path) == 0 then
+    return set
+  end
+  for _, line in ipairs(vim.fn.readfile(path)) do
+    local k = line:match("^([^\t]+\t[^\t]+)")
+    if k then
+      set[k] = true
+    end
+  end
+  return set
+end
+
+--- Dismiss the quickfix entry under the cursor.
+function M.dismiss()
+  local qf = vim.fn.getqflist({ items = 0, idx = 0 })
+  local item = qf.items[qf.idx]
+  if not item or not item.user_data or not item.user_data.check then
+    vim.notify("No Vale entry here", vim.log.levels.WARN)
+    return
+  end
+
+  local root = item.user_data.root or M.last_root or vault.root()
+  if not root then
+    vim.notify("Can't locate the vault for this entry", vim.log.levels.WARN)
+    return
+  end
+
+  local record = string.format(
+    "%s\t%s",
+    key(item.user_data.check, item.user_data.line_text),
+    vim.trim(item.user_data.line_text or ""):sub(1, 90)
+  )
+
+  local path = dismiss_path(root)
+  local existing = vim.fn.filereadable(path) == 1 and vim.fn.readfile(path) or {}
+  table.insert(existing, record)
+  vim.fn.writefile(existing, path)
+
+  -- Drop it from the visible list so the checklist shrinks as you work.
+  table.remove(qf.items, qf.idx)
+  vim.fn.setqflist({}, "r", { title = "Vale", items = qf.items })
+  vim.notify(string.format("Dismissed [%s] (%d left)", item.user_data.check, #qf.items))
+end
+
+--- Forget every dismissal in this vault.
+function M.undismiss_all()
+  local root = vault.root() or M.last_root
+  if not root then
+    vim.notify("Not inside an Obsidian vault", vim.log.levels.WARN)
+    return
+  end
+  local path = dismiss_path(root)
+  if vim.fn.filereadable(path) == 1 then
+    vim.fn.delete(path)
+    vim.notify("Cleared all Vale dismissals")
+  else
+    vim.notify("No dismissals to clear")
+  end
+end
+
 --- Create .vale.ini and the rule files in the current vault.
 function M.init()
   local root = vault.root()
@@ -134,6 +222,8 @@ function M.run(path)
   local cmd = { "vale", "--output=JSON" }
   vim.list_extend(cmd, paths)
 
+  M.last_root = root
+
   vim.system(cmd, { cwd = root, text = true }, function(res)
     vim.schedule(function()
       local ok, parsed = pcall(vim.json.decode, res.stdout or "")
@@ -142,28 +232,44 @@ function M.run(path)
         return
       end
 
-      local items = {}
+      local dismissed = load_dismissed(root)
+      local lines_cache = {}
+      local items, skipped = {}, 0
+
       for file, alerts in pairs(parsed) do
+        local abs = vim.startswith(file, "/") and file or (root .. "/" .. file)
+        if not lines_cache[abs] then
+          lines_cache[abs] = vim.fn.filereadable(abs) == 1 and vim.fn.readfile(abs) or {}
+        end
+
         for _, a in ipairs(alerts) do
-          table.insert(items, {
-            filename = file,
-            lnum = a.Line,
-            col = (a.Span and a.Span[1]) or 1,
-            text = string.format("[%s] %s", a.Check or "?", a.Message or ""),
-            type = a.Severity == "error" and "E" or (a.Severity == "warning" and "W" or "I"),
-          })
+          local line_text = lines_cache[abs][a.Line] or ""
+          if dismissed[key(a.Check or "?", line_text)] then
+            skipped = skipped + 1
+          else
+            table.insert(items, {
+              filename = abs,
+              lnum = a.Line,
+              col = (a.Span and a.Span[1]) or 1,
+              text = string.format("[%s] %s", a.Check or "?", a.Message or ""),
+              type = a.Severity == "error" and "E" or (a.Severity == "warning" and "W" or "I"),
+              user_data = { check = a.Check or "?", line_text = line_text, root = root },
+            })
+          end
         end
       end
 
+      local suffix = skipped > 0 and string.format(" (%d dismissed)", skipped) or ""
+
       if #items == 0 then
-        vim.notify("Vale: clean")
+        vim.notify("Vale: clean" .. suffix)
         return
       end
 
       table.sort(items, function(x, y) return x.lnum < y.lnum end)
       vim.fn.setqflist({}, "r", { title = "Vale", items = items })
       vim.cmd("copen")
-      vim.notify(string.format("Vale: %d suggestion(s)", #items))
+      vim.notify(string.format("Vale: %d suggestion(s)%s", #items, suffix))
     end)
   end)
 end
@@ -205,6 +311,17 @@ function M.setup()
 
   vim.api.nvim_create_user_command("ValeDraft", M.draft, { desc = "Lint the whole draft with Vale" })
   vim.api.nvim_create_user_command("ValeInit", M.init, { desc = "Create Vale config in this vault" })
+  vim.api.nvim_create_user_command("ValeDismiss", M.dismiss, { desc = "Dismiss the Vale entry under the cursor" })
+  vim.api.nvim_create_user_command("ValeUndismissAll", M.undismiss_all, { desc = "Clear all Vale dismissals" })
+
+  -- `x` dismisses inside the quickfix window, so the list works as a checklist.
+  vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("ValeQuickfix", { clear = true }),
+    pattern = "qf",
+    callback = function(args)
+      vim.keymap.set("n", "x", M.dismiss, { buffer = args.buf, desc = "Vale: won't do" })
+    end,
+  })
 end
 
 return M

@@ -54,6 +54,8 @@ function M.setup()
       { "", "PROSE LINT" },
       { "<Leader>vv", ":Vale       lint this file" },
       { "<Leader>vd", ":ValeDraft  lint the whole draft" },
+      { "x", "             (in quickfix) won\'t do -- dismiss it" },
+      { "]q / [q", "       next / prev quickfix entry" },
       { "]d / [d", "         next / prev harper suggestion" },
       { "<Leader>a", "        accept a harper fix" },
       { "", "" },
