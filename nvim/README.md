@@ -237,6 +237,9 @@ Two rules that matter:
 `../bin/compile.rb` builds a manuscript from a Longform draft, replacing the
 Longform compile chain. It's usable from a shell on its own; nvim just fronts it.
 
+Its output is byte-identical to Longform's own compile, verified against a
+freshly generated build of BBaS Vol 1 (11,846 lines, 136,525 words).
+
 | Key | Command | Does |
 |---|---|---|
 | `<Leader>mc` | `:Compile` | build the manuscript |
