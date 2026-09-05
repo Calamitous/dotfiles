@@ -32,19 +32,27 @@ local function to_clipboard(lines)
   end
 
   local md = clean(table.concat(lines, "\n"))
-
-  local result = vim.system(
-    { "sh", "-c", "pandoc -f markdown -t html | xclip -selection clipboard -t text/html" },
-    { stdin = md }
-  ):wait()
-
-  if result.code ~= 0 then
-    vim.notify("Copy as HTML failed: " .. (result.stderr or "unknown error"), vim.log.levels.ERROR)
-    return
-  end
-
   local words = select(2, md:gsub("%S+", ""))
-  vim.notify(string.format("Copied %d lines (%d words) as HTML", #lines, words))
+
+  -- xclip forks into the background to hold the X selection, and the forked
+  -- child inherits stdout/stderr. Without this redirect those pipes never
+  -- close, and nvim waits on them forever -- the command appears to hang.
+  local cmd = "pandoc -f markdown -t html | xclip -selection clipboard -t text/html >/dev/null 2>&1"
+
+  -- Run asynchronously: pandoc on a long chapter shouldn't freeze the editor.
+  vim.system({ "sh", "-c", cmd }, { stdin = md }, function(result)
+    vim.schedule(function()
+      if result.code ~= 0 then
+        local err = result.stderr
+        if err == nil or err == "" then
+          err = "exit code " .. tostring(result.code)
+        end
+        vim.notify("Copy as HTML failed: " .. err, vim.log.levels.ERROR)
+      else
+        vim.notify(string.format("Copied %d lines (%d words) as HTML", #lines, words))
+      end
+    end)
+  end)
 end
 
 --- Copy the whole buffer.

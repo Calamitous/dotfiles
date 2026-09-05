@@ -15,6 +15,7 @@ function M.setup()
   require("writing.find").setup()
   require("writing.reading").setup()
   require("writing.sidebar").setup()
+  require("writing.checkbox").setup()
 
   vim.api.nvim_create_user_command("WritingHelp", function()
     local rows = {
@@ -31,6 +32,7 @@ function M.setup()
       { "<Leader>wp", ":WP         prose mode (wrap, spell, gj/gk)" },
       { "<Leader>y", ":CopyHTML   copy buffer/selection as rich text" },
       { "<Leader>s", "z=          spelling suggestions" },
+      { "<Leader>l", ":CheckboxToggle  check/uncheck (or add) a checkbox" },
       { "zg", "            add word to this vault's dictionary" },
       { "]s / [s", "      next / previous misspelling" },
       { "", "" },

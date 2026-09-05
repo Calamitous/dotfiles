@@ -11,9 +11,15 @@ map("n", "<Leader>?", "<Cmd>WritingHelp<CR>", { desc = "Show writing commands" }
 
 -- Fuzzy finding (vault-scoped)
 map("n", "<Leader>o", "<Cmd>Files<CR>", { desc = "Find files in vault" })
+
+map("n", "<F8>", "<Cmd>Grep<CR>", { desc = "Grep vault contents" })
 map("n", "<Leader>/", "<Cmd>Grep<CR>", { desc = "Grep vault contents" })
+
 map("n", "<Leader>b", "<Cmd>Buffers<CR>", { desc = "Switch buffer" })
+
 map("n", "<Leader>e", "<Cmd>Sidebar<CR>", { desc = "File sidebar (here)" })
+map("n", "<F4>", "<Cmd>Sidebar<CR>", { desc = "File sidebar (here)" })
+
 map("n", "<Leader>E", "<Cmd>SidebarVault<CR>", { desc = "File sidebar (vault root)" })
 map("n", "<Leader>,", "<Cmd>Config<CR>", { desc = "Open nvim config" })
 map("n", "<Leader>r", "<Cmd>Reload<CR>", { desc = "Reload nvim config" })
@@ -34,5 +40,9 @@ map("v", "<Leader>y", ":CopyHTML<CR>", { desc = "Copy selection as HTML" })
 
 -- Spelling
 map("n", "<Leader>s", "z=", { desc = "Spelling suggestions" })
+
+-- Checkboxes
+map("n", "<Leader>l", "<Cmd>CheckboxToggle<CR>", { desc = "Toggle checkbox" })
+map("v", "<Leader>l", ":CheckboxToggle<CR>", { desc = "Toggle checkboxes" })
 
 map("n", "<F2>", "z=", { desc = "Spelling suggestions" })

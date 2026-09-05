@@ -16,6 +16,12 @@ o.softtabstop = 2
 o.expandtab = true
 o.autoindent = true
 
+-- Wrap at word boundaries rather than mid-word. 'linebreak' is inert unless
+-- 'wrap' is on, so both are set explicitly here.
+o.wrap = true
+o.linebreak = true
+o.breakindent = true
+
 o.showmatch = true
 o.incsearch = true
 o.ignorecase = true

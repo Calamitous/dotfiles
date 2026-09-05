@@ -30,6 +30,10 @@ ln -s ~/Projects/dotfiles/jshintrc ~/.jshintrc
 ln -s ~/Projects/dotfiles/tmux.conf ~/.tmux.conf
 ln -s ~/Projects/dotfiles/tmuxinator ~/.tmuxinator
 ln -s ~/Projects/dotfiles/vimrc ~/.vimrc
+mkdir -p ~/.vim
+ln -s ~/Projects/dotfiles/vim/colors ~/.vim/colors
+ln -s ~/Projects/dotfiles/vim/ftplugin ~/.vim/ftplugin
+ln -s ~/Projects/dotfiles/nvim ~/.config/nvim
 ln -s ~/Projects/dotfiles/zsh_aliases ~/.zsh_aliases
 ln -s ~/Projects/dotfiles/zshrc ~/.zshrc
 ln -s ~/Projects/dotfiles/zpreztorc ~/.zpreztorc

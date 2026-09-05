@@ -134,11 +134,23 @@ function M.edit()
 end
 
 function M.setup()
+  local group = vim.api.nvim_create_augroup("WritingAbbrev", { clear = true })
+
   vim.api.nvim_create_autocmd("FileType", {
-    group = vim.api.nvim_create_augroup("WritingAbbrev", { clear = true }),
+    group = group,
     pattern = "markdown",
     callback = function(args)
       M.apply(args.buf)
+    end,
+  })
+
+  -- Saving the abbreviations file reloads it everywhere, so adding one is just
+  -- `<Leader>wa`, type, `:w` -- no separate reload step.
+  vim.api.nvim_create_autocmd("BufWritePost", {
+    group = group,
+    pattern = "*/" .. M.relative_path,
+    callback = function()
+      M.reload()
     end,
   })
 

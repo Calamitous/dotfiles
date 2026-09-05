@@ -72,13 +72,13 @@ set noshowmode
 syntax enable
 
 set background=dark
-" colorscheme dracula
+colorscheme dracula
 " colorscheme zenburn
 " colorscheme railscasts
 " colorscheme elflord
 " colorscheme solarized
 " colorscheme industry
-colorscheme solarized8_high
+" colorscheme solarized8_high
 
 scriptencoding utf-8
 set encoding=utf-8

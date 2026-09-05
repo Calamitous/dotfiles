@@ -31,10 +31,8 @@ if [[ -z "$TMUX" ]]; then
   export TERM='xterm-256color'
 fi
 
-setxkbmap -option caps:escape
+# setxkbmap -option caps:escape
 
-autoload -U compinit && compinit
-zmodload -i zsh/complist
 
 # fpath=(/usr/local/share/zsh-completions $fpath)
 
@@ -75,12 +73,13 @@ zstyle ':completion:*:(s|ssh|scp|ftp|sftp):*' users $users
 zstyle ':completion:*' matcher-list '' 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' '+l:|?=** r:|?=**'
 
 # Initialize the autocompletion
-autoload -Uz compinit && compinit -i
 # export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*"'
 # . $HOME/.asdf/asdf.sh
 # append completions to fpath
 # fpath=(${ASDF_DIR}/completions $fpath)
 # initialise completions with ZSH's compinit
+# compinit must come AFTER every fpath change above, or the added
+# completion directories are invisible to it.
 autoload -Uz compinit && compinit
 
 # Manjaro-supplied

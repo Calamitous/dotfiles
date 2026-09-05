@@ -5,7 +5,7 @@ Code editing stays in **vim** (`../vimrc`); nothing here touches that setup.
 
 Install: `ln -s ~/Projects/dotfiles/nvim ~/.config/nvim`
 
-Press `<Leader>?` inside nvim for this list. Leader is **space**.
+Press `<Leader>?` (`:WritingHelp`) inside nvim for this list. Leader is **space**.
 
 ## Keymaps
 
@@ -32,12 +32,17 @@ case-insensitive; flip `M.ignore_case` in `lua/writing/find.lua` for smart-case.
 | Key | Command | Does |
 |---|---|---|
 | `<Leader>wr` | `:Reading` | centred fixed-width reading mode |
-| `<Leader>wp` | `:WP` | prose mode — wrap, spell, `gj`/`gk` |
+| `<Leader>wp` | `:WP` | prose mode — wrap, spell, `gj`/`gk` (alias `:ProseMode`) |
 | `<Leader>y` | `:CopyHTML` | copy buffer *or selection* as rich text |
 | `<Leader>s` | `z=` | spelling suggestions |
+| `<Leader>l` | `:CheckboxToggle` | check/uncheck a checkbox, or add one to a list item |
 
 `:Reading 100` sets a one-off width; the default lives in `M.width`
 (`lua/writing/reading.lua`). Prose mode auto-enables for markdown inside a vault.
+
+`<Leader>l` works on the cursor line or a visual selection. `- [ ]` toggles to
+`- [x]` and back; a bare list item (`- task`, `* task`, `1. task`) gains a
+checkbox; anything else is left alone.
 
 `:CopyHTML` runs the text through pandoc into the clipboard as `text/html`, so a
 paste into Google Docs or Word arrives formatted. Frontmatter, `%%comments%%`
@@ -75,6 +80,11 @@ nmr = Namarûn
 
 They install **buffer-locally**, so two vaults' abbreviations can be open at
 once without collision. `:AbbrevEdit` creates the file if it doesn't exist.
+
+**Adding one is `<Leader>wa`, type the row, `:w`.** Saving the file reapplies it
+to every open markdown buffer automatically -- no reload step. `:AbbrevReload`
+(`<Leader>wA`) is only needed if the file changed outside nvim, e.g. edited in
+Obsidian or pulled from git.
 
 > **Never set `paste`.** It silently disables insert-mode abbreviations,
 > insert mappings and `textwidth`. It is deliberately absent from this config.
