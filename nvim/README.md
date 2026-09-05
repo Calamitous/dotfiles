@@ -258,9 +258,19 @@ length is a choice.
 
 | Key | Command | Does |
 |---|---|---|
-| `<Leader>vv` | `:Vale` | lint this file into the quickfix list |
-| `<Leader>vd` | `:ValeDraft` | lint the whole draft |
+| `<Leader>vv` | `:Vale` | lint **this chapter** into the quickfix list |
+| `<Leader>vd` | `:ValeDraft` | lint **every chapter in the book** |
 | | `:ValeInit` | create the config in this vault |
+
+> **"file" vs "draft."** A *file* is the buffer you're in — one chapter. A
+> *draft* is the whole book: the scene list in `Index.md`, all 63 of them.
+> "Draft" is Longform's word for a manuscript project (scene list + workflow),
+> which unfortunately collides with the everyday "first draft / second draft".
+> Same distinction applies to `:WordCount` vs `:WordCountDraft`.
+>
+> Draft-wide commands read the **scene list**, not the folder — the folder also
+> contains `Index.md`, notes, and the compiled manuscript, and linting that
+> would report every issue in the book twice.
 
 `:ValeInit` writes `.vale.ini` and `.vale/Prose/*.yml` into the vault, so rules
 are versioned with the book and can differ per project. The starting set comes

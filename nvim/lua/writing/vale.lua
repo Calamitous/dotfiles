@@ -106,7 +106,8 @@ function M.init()
   end
 end
 
---- Lint a file (default: current buffer) into the quickfix list.
+--- Lint one or more paths into the quickfix list.
+--- @param path string|string[]|nil  defaults to the current buffer
 function M.run(path)
   if vim.fn.executable("vale") ~= 1 then
     vim.notify("vale not installed", vim.log.levels.ERROR)
@@ -124,12 +125,16 @@ function M.run(path)
   end
 
   path = path or vim.api.nvim_buf_get_name(0)
-  if path == "" then
-    vim.notify("Buffer has no file", vim.log.levels.WARN)
+  local paths = type(path) == "table" and path or { path }
+  if #paths == 0 or paths[1] == "" then
+    vim.notify("Nothing to lint", vim.log.levels.WARN)
     return
   end
 
-  vim.system({ "vale", "--output=JSON", path }, { cwd = root, text = true }, function(res)
+  local cmd = { "vale", "--output=JSON" }
+  vim.list_extend(cmd, paths)
+
+  vim.system(cmd, { cwd = root, text = true }, function(res)
     vim.schedule(function()
       local ok, parsed = pcall(vim.json.decode, res.stdout or "")
       if not ok or type(parsed) ~= "table" then
@@ -163,14 +168,34 @@ function M.run(path)
   end)
 end
 
---- Lint the whole current draft.
+--- Lint every scene in the current draft.
+---
+--- Deliberately the scene list from Index.md, not the folder: the folder also
+--- holds Index.md, notes files, and the compiled manuscript -- linting that
+--- last one would report every issue in the book a second time.
 function M.draft()
   local index = vault.draft()
   if not index then
     vim.notify("No draft above this buffer", vim.log.levels.WARN)
     return
   end
-  M.run(vim.fs.dirname(index))
+
+  local d = require("writing.draft").read(index)
+  if not d or #d.scenes == 0 then
+    vim.notify("No scenes listed in " .. vim.fs.basename(index), vim.log.levels.WARN)
+    return
+  end
+
+  local paths = {}
+  for _, scene in ipairs(d.scenes) do
+    local p = require("writing.draft").scene_path(d, scene)
+    if vim.uv.fs_stat(p) then
+      table.insert(paths, p)
+    end
+  end
+
+  vim.notify(string.format("Vale: linting %d scenes...", #paths))
+  M.run(paths)
 end
 
 function M.setup()
