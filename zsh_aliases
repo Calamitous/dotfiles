@@ -17,6 +17,7 @@ alias pglog='tail -f /usr/local/var/postgres/server.log'
 alias qcurl="curl --fail --silent --show-error"
 alias careful_pull="git stash && git pull --rebase && git stash pop"
 alias safe_gpr="git stash && git pull --rebase && git stash pop"
+alias safe_pull="git stash && git pull --rebase && git stash pop"
 
 alias tmls="tmux list-sessions"
 alias tmat="tmux attach -t"
@@ -64,3 +65,18 @@ alias pbcopy="xclip -selection clipboard -i"
 alias watch_dvd="mplayer dvdnav:// -mouse-movements -dvd-device "
 
 alias s='ssh'
+alias change_x="vim ~/.Xresources && xrdb -merge ~/.Xresources"
+
+alias publish_resume_pdf="scp ~/Business/Personal/Resume/EricBudd_DirectorOfEngineering_Resume.pdf aluminum:/home/eric/Sites/calamitylane.com/resume.pdf"
+alias yum="echo 'You probably meant \"yay\" or \"pamac\"'"
+alias fix_time_drift="sudo systemctl restart systemd-timesyncd && sudo systemctl status systemd-timesyncd"
+
+alias strip_extra_blank_lines="sed -i '/^$/N;/^\n$/D'"
+alias strip_trailing_whitespace="sed -i 's/[ \t]*$//'"
+# alias fshot="QT_SCALE_FACTOR=0.65 flameshot"
+alias bbas_claude="claude --resume 'BBAS'"
+alias taata_claude="claude --resume 'TAATA'"
+alias mpv_sonatas="mpv http://ericbudd%40mount-olive%2Ecom:JDEkYlRJRFdmU24kMWlrcEhaeDRFNGZ6WnN2TExNdlg5Lg==@streams.calmradio.com:21814/stream"
+alias mpv_dvorak="mpv http://ericbudd%40mount-olive%2Ecom:JDEkYlRJRFdmU24kMWlrcEhaeDRFNGZ6WnN2TExNdlg5Lg==@streams.calmradio.com:10514/stream"
+alias mpv_piano_hymns="mpv http://ericbudd%40mount-olive%2Ecom:JDEkYlRJRFdmU24kMWlrcEhaeDRFNGZ6WnN2TExNdlg5Lg==@streams.calmradio.com:17256/stream"
+alias gcm="git commit -m"

@@ -1,5 +1,5 @@
 [user]
-  email = 12469+Calamitous@users.noreply.github.com
+	email = {ID}+{username}@users.noreply.github.com
   name = Eric B. Budd
 [core]
   editor = vim

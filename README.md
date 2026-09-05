@@ -37,6 +37,7 @@ mkdir ~/.i3
 ln -s ~/Projects/dotfiles/i3config ~/.i3/config
 ln -s ~/Projects/dotfiles/i3status.conf ~/.i3status.conf
 ln -s ~/Projects/dotfiles/muttrc ~/.muttrc
+ln -s ~/Projects/dotfiles/mimeapps.list ~/.config/mimeapps.list
 
 touch ~/.private.conf
 

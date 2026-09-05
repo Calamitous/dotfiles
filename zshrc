@@ -27,13 +27,21 @@ bindkey "^A" beginning-of-line
 bindkey "^E" end-of-line
 bindkey "^X^E" edit-command-line
 
-export TERM='xterm-256color'
-# setxkbmap -option caps:escape
+if [[ -z "$TMUX" ]]; then
+  export TERM='xterm-256color'
+fi
+
+setxkbmap -option caps:escape
+
+autoload -U compinit && compinit
+zmodload -i zsh/complist
+
+# fpath=(/usr/local/share/zsh-completions $fpath)
 
 export HISTFILE=~/.zsh_history
 export SAVEHIST=100
 
-export LEDGER_FILE=~/Projects/personal_finances/hledger.journal
+# export LEDGER_FILE=~/Projects/personal_finances/hledger.journal
 
 bindkey "^R" history-incremental-search-backward
 
@@ -68,3 +76,43 @@ zstyle ':completion:*' matcher-list '' 'm:{[:lower:][:upper:]}={[:upper:][:lower
 
 # Initialize the autocompletion
 autoload -Uz compinit && compinit -i
+# export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*"'
+# . $HOME/.asdf/asdf.sh
+# append completions to fpath
+# fpath=(${ASDF_DIR}/completions $fpath)
+# initialise completions with ZSH's compinit
+autoload -Uz compinit && compinit
+
+# Manjaro-supplied
+# # Use powerline
+# USE_POWERLINE="true"
+# # Source manjaro-zsh-configuration
+# if [[ -e /usr/share/zsh/manjaro-zsh-config ]]; then
+#   source /usr/share/zsh/manjaro-zsh-config
+# fi
+# # Use manjaro zsh prompt
+# if [[ -e /usr/share/zsh/manjaro-zsh-prompt ]]; then
+#   source /usr/share/zsh/manjaro-zsh-prompt
+# fi
+
+h=()
+if [[ -r ~/.ssh/config ]]; then
+  h=($h ${${${(@M)${(f)"$(cat ~/.ssh/config)"}:#Host *}#Host }:#*[*?]*})
+fi
+if [[ -r ~/.ssh/known_hosts ]]; then
+  h=($h ${${${(f)"$(cat ~/.ssh/known_hosts{,2} || true)"}%%\ *}%%,*}) 2>/dev/null
+fi
+if [[ $#h -gt 0 ]]; then
+  zstyle ':completion:*:ssh:*' hosts $h
+  zstyle ':completion:*:slogin:*' hosts $h
+fi
+. /opt/asdf-vm/asdf.sh
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# grok
+# export PATH=/home/eric/.grok/bin:$PATH
+
+export DISPLAY=:0

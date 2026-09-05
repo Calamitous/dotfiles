@@ -9,9 +9,30 @@
 -- Reflowing with `gq` would hard-wrap chapters and produce huge git diffs.
 -- The mthesaur.txt thesaurus is wired up only if actually present.
 
+local vault = require("writing.vault")
+
 local M = {}
 
 M.thesaurus = vim.fn.expand("~/.vim/thesaurus/mthesaur.txt")
+
+--- Per-vault spelling dictionary, relative to the vault root. `zg` adds the
+--- word under the cursor; `zw` marks one wrong; `z=` suggests. Because it lives
+--- in the vault, invented vocabulary travels with the book in its own repo --
+--- the same arrangement as Meta/Abbreviations.md.
+M.spellfile = "Meta/dictionary.utf-8.add"
+
+--- Point 'spellfile' at this vault's dictionary, creating the folder if needed.
+local function set_spellfile(bufnr)
+  local path = vault.path(M.spellfile, bufnr)
+  if not path then
+    return
+  end
+  local dir = vim.fs.dirname(path)
+  if vim.fn.isdirectory(dir) == 0 then
+    vim.fn.mkdir(dir, "p")
+  end
+  vim.opt_local.spellfile = path
+end
 
 local function set_local_options()
   vim.opt_local.wrap = true
@@ -24,6 +45,7 @@ local function set_local_options()
   vim.opt_local.list = false
   vim.opt_local.spell = true
   vim.opt_local.spelllang = "en_us"
+  set_spellfile()
   vim.opt_local.expandtab = true
   vim.opt_local.conceallevel = 2
 

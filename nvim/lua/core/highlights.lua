@@ -20,7 +20,15 @@ local M = {}
 
 --- Use real italics for emphasis. Set false if your terminal fakes them
 --- with reverse video.
-M.italics = false
+M.italics = true
+
+--- How to mark misspellings.
+---   "underline"  underline (works in every terminal)     -- default
+---   "text"       colour the word, no decoration          -- quietest
+---   "undercurl"  squiggle; needs terminal support, and DEGRADES TO REVERSE
+---                VIDEO over ssh/tmux with TERM=xterm-256color
+---   "off"        no spell highlighting at all
+M.spell_style = "underline"
 
 --- Colours. nil means "leave whatever the colorscheme chose".
 M.palette = {
@@ -29,6 +37,10 @@ M.palette = {
   heading = "#81a2be",
   heading_alt = "#8abeb7", -- deeper heading levels
   raw = "#b5bd68", -- `code`
+  spell_bad = "#cc6666",
+  spell_cap = "#e0b070",
+  spell_rare = "#82b8c8",
+  spell_local = "#8fbf8f",
   link = "#7aa6da",
   quote = "#8a8a8a",
   list = "#b294bb",
@@ -69,6 +81,25 @@ function M.apply()
   hl("@markup.list", { fg = p.list })
   hl("@markup.list.checked", { fg = p.raw })
   hl("@markup.list.unchecked", { fg = p.quote })
+
+  -- Spelling. A fantasy manuscript is full of words no dictionary has, so
+  -- these need to be legible but not shouty. Undercurl is deliberately not the
+  -- default: terminals that can't draw it fall back to reverse video.
+  local function spell(colour)
+    if M.spell_style == "off" then
+      return {}
+    elseif M.spell_style == "text" then
+      return { fg = colour }
+    elseif M.spell_style == "undercurl" then
+      return { undercurl = true, sp = colour }
+    end
+    return { underline = true, sp = colour }
+  end
+
+  hl("SpellBad", spell(p.spell_bad))
+  hl("SpellCap", spell(p.spell_cap))
+  hl("SpellRare", spell(p.spell_rare))
+  hl("SpellLocal", spell(p.spell_local))
 
   -- Concealed markers (the `_` and `**` themselves) shouldn't draw the eye.
   hl("Conceal", { fg = p.quote })

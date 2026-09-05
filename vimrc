@@ -65,7 +65,7 @@ set ignorecase  " Case insensitive search
 set smartcase   " ...except when we put a cap in there
 set scrolloff=5 " Minimum lines above/below cursor
 set nowrap      " Don't wrap long lines
-" set paste       " Make paste handling rational, but breaks auto-indentation
+set paste       " Make paste handling rational, but breaks auto-indentation
 
 set noshowmode
 

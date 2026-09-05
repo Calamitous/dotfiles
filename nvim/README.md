@@ -79,6 +79,34 @@ once without collision. `:AbbrevEdit` creates the file if it doesn't exist.
 > **Never set `paste`.** It silently disables insert-mode abbreviations,
 > insert mappings and `textwidth`. It is deliberately absent from this config.
 
+## Spelling
+
+A fantasy manuscript is full of words no dictionary has, so each vault keeps its
+own dictionary at `<vault>/Meta/dictionary.utf-8.add`:
+
+| Key | Does |
+|---|---|
+| `zg` | add the word under the cursor to this vault's dictionary |
+| `zw` | mark the word under the cursor as wrong |
+| `z=` | suggestions (also `<Leader>s`) |
+| `]s` / `[s` | next / previous misspelling |
+
+The dictionary lives in the vault, so invented vocabulary travels with the book
+in its own git repo -- the same arrangement as `Meta/Abbreviations.md`.
+
+`zg` also writes a compiled `dictionary.utf-8.add.spl` beside it. Commit the
+`.add` (it's your word list); the `.spl` is generated and can be ignored:
+
+```gitignore
+Meta/*.spl
+```
+
+Misspellings are **underlined** by default. Undercurl is deliberately not the
+default: terminals that can't draw it (notably `xterm-256color` over ssh or
+tmux) fall back to **reverse video**, which looks like broken highlighting. Set
+`M.spell_style` in `lua/core/highlights.lua` to `"undercurl"`, `"text"` or
+`"off"` to taste.
+
 ## Appearance
 
 Colours and emphasis styling live in the two tables at the top of

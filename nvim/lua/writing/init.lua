@@ -31,6 +31,8 @@ function M.setup()
       { "<Leader>wp", ":WP         prose mode (wrap, spell, gj/gk)" },
       { "<Leader>y", ":CopyHTML   copy buffer/selection as rich text" },
       { "<Leader>s", "z=          spelling suggestions" },
+      { "zg", "            add word to this vault's dictionary" },
+      { "]s / [s", "      next / previous misspelling" },
       { "", "" },
       { "", "COUNTS" },
       { "<Leader>wc", ":WordCount       this buffer" },
