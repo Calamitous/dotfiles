@@ -37,6 +37,15 @@ case-insensitive; flip `M.ignore_case` in `lua/writing/find.lua` for smart-case.
 | `<Leader>ks` | `:Obsidian quick_switch` | jump to a note by title |
 | `<Leader>kn` | `:Obsidian new` | new note |
 | `<Leader>kt` | `:Obsidian toc` | table of contents |
+| `<Leader>kl` | `:Obsidian links` | links in this note |
+| `<Leader>kg` | `:Obsidian search` | grep across notes |
+| `<Leader>k#` | `:Obsidian tags` | tags |
+| `<Leader>ko` | `:Obsidian open` | open this note in the Obsidian app |
+
+More subcommands available to bind, all in `lua/core/keymaps.lua`:
+`footnotes` `template` `new_from_template` `workspace` `bookmarks` `paste_img`
+`unique_note` `today` `tomorrow` `yesterday` `dailies` `rebuild_cache` `check`.
+Run `:Obsidian` and press `<Tab>` to see the current list.
 
 Rename rewrites `[[Note]]`, `[[Note|alias]]`, `[[Note#heading]]`, `[[Note#^block]]`
 and `![[Note]]` embeds across the vault. **Use `<Leader>kr` and answer the

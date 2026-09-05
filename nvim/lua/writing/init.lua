@@ -32,6 +32,8 @@ function M.setup()
       { "<Leader>kf", ":Obsidian follow_link" },
       { "<Leader>kb", ":Obsidian backlinks" },
       { "<Leader>ks", ":Obsidian quick_switch" },
+      { "<Leader>kg", ":Obsidian search    grep across notes" },
+      { "<Leader>kl", ":Obsidian links     links in this note" },
       { "", "" },
       { "", "WRITING" },
       { "<Leader>wr", ":Reading    centred fixed-width reading mode" },

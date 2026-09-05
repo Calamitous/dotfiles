@@ -8,6 +8,7 @@ local map = vim.keymap.set
 map("i", "kj", "<Esc>", { desc = "Leave insert mode" })
 
 map("n", "<Leader>?", "<Cmd>WritingHelp<CR>", { desc = "Show writing commands" })
+map("n", "<F2>", "<Cmd>ObsidianRename<CR>", { desc = "Rename the file, updating all wikilinks references to it." })
 
 -- Fuzzy finding (vault-scoped)
 map("n", "<Leader>o", "<Cmd>Files<CR>", { desc = "Find files in vault" })
@@ -40,6 +41,24 @@ map("v", "<Leader>y", ":CopyHTML<CR>", { desc = "Copy selection as HTML" })
 
 -- Spelling
 map("n", "<Leader>s", "z=", { desc = "Spelling suggestions" })
+
+-- Wikilinks (obsidian.nvim). These need a markdown buffer in a vault -- the
+-- plugin loads on `ft = "markdown"`.
+--
+-- Other subcommands available to bind:
+--   search  tags  links  footnotes  template  new_from_template  workspace
+--   bookmarks  paste_img  unique_note  today  tomorrow  yesterday  dailies
+--   open  (opens the note in the Obsidian app)  rebuild_cache  check
+map("n", "<Leader>kr", "<Cmd>Obsidian rename<CR>", { desc = "Rename note + rewrite links" })
+map("n", "<Leader>kf", "<Cmd>Obsidian follow_link<CR>", { desc = "Follow wikilink" })
+map("n", "<Leader>kb", "<Cmd>Obsidian backlinks<CR>", { desc = "Backlinks" })
+map("n", "<Leader>ks", "<Cmd>Obsidian quick_switch<CR>", { desc = "Quick switch note" })
+map("n", "<Leader>kn", "<Cmd>Obsidian new<CR>", { desc = "New note" })
+map("n", "<Leader>kt", "<Cmd>Obsidian toc<CR>", { desc = "Table of contents" })
+map("n", "<Leader>kl", "<Cmd>Obsidian links<CR>", { desc = "Links in this note" })
+map("n", "<Leader>kg", "<Cmd>Obsidian search<CR>", { desc = "Search notes (grep)" })
+map("n", "<Leader>k#", "<Cmd>Obsidian tags<CR>", { desc = "Tags" })
+map("n", "<Leader>ko", "<Cmd>Obsidian open<CR>", { desc = "Open in Obsidian app" })
 
 -- Checkboxes
 map("n", "<Leader>l", "<Cmd>CheckboxToggle<CR>", { desc = "Toggle checkbox" })

@@ -17,6 +17,10 @@
 --
 -- Completion comes from the plugin's built-in obsidian-ls LSP server, so no
 -- separate completion engine is needed; see the LspAttach autocmd below.
+--
+-- Keymaps live in lua/core/keymaps.lua, not in a lazy `keys = {}` table here.
+-- Lazy-loading is already handled by `ft = "markdown"`, so nothing is lost by
+-- keeping every mapping in one editable place.
 
 --- Every vault under ~/Writing becomes a workspace, discovered rather than
 --- hardcoded -- there are fifteen and the list changes.
@@ -68,12 +72,4 @@ return {
       end,
     })
   end,
-  keys = {
-    { "<Leader>kf", "<Cmd>Obsidian follow_link<CR>", desc = "Follow wikilink" },
-    { "<Leader>kr", "<Cmd>Obsidian rename<CR>", desc = "Rename note (rewrites links)" },
-    { "<Leader>kb", "<Cmd>Obsidian backlinks<CR>", desc = "Backlinks" },
-    { "<Leader>kn", "<Cmd>Obsidian new<CR>", desc = "New note" },
-    { "<Leader>ks", "<Cmd>Obsidian quick_switch<CR>", desc = "Quick switch note" },
-    { "<Leader>kt", "<Cmd>Obsidian toc<CR>", desc = "Table of contents" },
-  },
 }
