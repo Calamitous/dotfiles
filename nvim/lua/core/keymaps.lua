@@ -88,6 +88,16 @@ map("n", "<Leader>kg", "<Cmd>Obsidian search<CR>", { desc = "Search notes (grep)
 map("n", "<Leader>k#", "<Cmd>Obsidian tags<CR>", { desc = "Tags" })
 map("n", "<Leader>ko", "<Cmd>Obsidian open<CR>", { desc = "Open in Obsidian app" })
 
+-- Diagnostics (harper grammar)
+map("n", "]d", function() vim.diagnostic.jump({ count = 1 }) end, { desc = "Next diagnostic" })
+map("n", "[d", function() vim.diagnostic.jump({ count = -1 }) end, { desc = "Previous diagnostic" })
+map("n", "<Leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic" })
+map("n", "<Leader>a", vim.lsp.buf.code_action, { desc = "Code action (accept fix)" })
+
+-- Prose linting (Vale)
+map("n", "<Leader>vv", "<Cmd>Vale<CR>", { desc = "Lint this file" })
+map("n", "<Leader>vd", "<Cmd>ValeDraft<CR>", { desc = "Lint the whole draft" })
+
 -- Manuscript
 map("n", "<Leader>mc", "<Cmd>Compile<CR>", { desc = "Compile manuscript" })
 map("n", "<Leader>mk", "<Cmd>CompileCheck<CR>", { desc = "Compile check (diff only)" })

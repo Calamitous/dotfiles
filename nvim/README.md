@@ -232,6 +232,55 @@ Two rules that matter:
    and plugin state in memory and flushes on change, so external writes can be
    silently clobbered. Read them; don't write them.
 
+## Prose linting
+
+Two checkers, doing different jobs.
+
+**Harper** (grammar) runs as an LSP on every markdown buffer, quietly — hints,
+not errors, with no virtual text.
+
+| Key | Does |
+|---|---|
+| `]d` / `[d` | next / previous suggestion |
+| `<Leader>d` | show the suggestion under the cursor |
+| `<Leader>a` | accept a fix (code action) |
+
+It reads **the same dictionary `zg` writes** (`Meta/dictionary.utf-8.add`), so a
+word added while writing is known to the spell checker and the grammar checker
+both. Adding the existing BBaS dictionary dropped its diagnostics on one
+chapter from 119 to 77.
+
+Linters are tuned for fiction in `lua/core/lsp.lua` — `SentenceCapitalization`
+and `LongSentences` are off, because dialogue is full of fragments and sentence
+length is a choice.
+
+**Vale** (style) runs on demand, with **your** rules and no shipped styles.
+
+| Key | Command | Does |
+|---|---|---|
+| `<Leader>vv` | `:Vale` | lint this file into the quickfix list |
+| `<Leader>vd` | `:ValeDraft` | lint the whole draft |
+| | `:ValeInit` | create the config in this vault |
+
+`:ValeInit` writes `.vale.ini` and `.vale/Prose/*.yml` into the vault, so rules
+are versioned with the book and can differ per project. The starting set comes
+from the craft analysis of BBaS:
+
+| Rule | Flags |
+|---|---|
+| `FilterWords` | `she felt`, `she saw`, `she noticed` — distance from POV |
+| `AdverbDialogueTag` | `said quietly`, `said harshly` |
+| `AssentEnding` | `"I will,"` and friends — weak chapter endings |
+| `Hedges` | `very`, `quite`, `rather`, `almost` |
+
+Deleting a noisy rule is the intended workflow, not a failure.
+
+**Two Vale gotchas**, both of which silently match nothing rather than erroring:
+`tokens` are wrapped in `\b` word boundaries, so a pattern starting with a
+quotation mark needs `nonword: true`; and `raw` entries are **concatenated**
+into one regex rather than alternated, so a multi-pattern `raw` list is almost
+never what you want.
+
 ## Compiling a manuscript
 
 `../bin/compile.rb` builds a manuscript from a Longform draft, replacing the

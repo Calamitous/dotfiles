@@ -17,6 +17,7 @@ function M.setup()
   require("writing.sidebar").setup()
   require("writing.checkbox").setup()
   require("writing.compile").setup()
+  require("writing.vale").setup()
 
   vim.api.nvim_create_user_command("WritingHelp", function()
     local rows = {
@@ -49,6 +50,12 @@ function M.setup()
       { "<Leader>mc", ":Compile        build the manuscript" },
       { "<Leader>mk", ":CompileCheck   build without writing; show the diff" },
       { "<Leader>ml", ":CompileList    drafts in this vault" },
+      { "", "" },
+      { "", "PROSE LINT" },
+      { "<Leader>vv", ":Vale       lint this file" },
+      { "<Leader>vd", ":ValeDraft  lint the whole draft" },
+      { "]d / [d", "         next / prev harper suggestion" },
+      { "<Leader>a", "        accept a harper fix" },
       { "", "" },
       { "", "COUNTS" },
       { "<Leader>wc", ":WordCount       this buffer" },

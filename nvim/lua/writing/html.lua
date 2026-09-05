@@ -1,9 +1,10 @@
 -- Copy markdown to the clipboard as rich text.
 --
--- The trick is xclip's `-t text/html` target: it puts real HTML on the
--- clipboard, so a paste into Google Docs, Word or an email arrives formatted
--- rather than as literal markup. Handles a visual selection as well as the
--- whole buffer, which the Obsidian plugin could not do.
+-- Puts real rich text on the clipboard, so a paste into Google Docs, Word or
+-- an email arrives formatted rather than as literal markup. Handles a visual
+-- selection as well as the whole buffer, which the Obsidian plugin could not.
+--
+-- The actual pipeline differs per platform; see core/platform.lua.
 
 local M = {}
 
@@ -22,22 +23,14 @@ end
 
 --- @param lines string[]
 local function to_clipboard(lines)
-  if vim.fn.executable("pandoc") ~= 1 then
-    vim.notify("pandoc not found", vim.log.levels.ERROR)
-    return
-  end
-  if vim.fn.executable("xclip") ~= 1 then
-    vim.notify("xclip not found", vim.log.levels.ERROR)
+  local cmd, err = require("core.platform").html_clipboard_cmd()
+  if not cmd then
+    vim.notify("Copy as HTML unavailable: " .. err, vim.log.levels.ERROR)
     return
   end
 
   local md = clean(table.concat(lines, "\n"))
   local words = select(2, md:gsub("%S+", ""))
-
-  -- xclip forks into the background to hold the X selection, and the forked
-  -- child inherits stdout/stderr. Without this redirect those pipes never
-  -- close, and nvim waits on them forever -- the command appears to hang.
-  local cmd = "pandoc -f markdown -t html | xclip -selection clipboard -t text/html >/dev/null 2>&1"
 
   -- Run asynchronously: pandoc on a long chapter shouldn't freeze the editor.
   vim.system({ "sh", "-c", cmd }, { stdin = md }, function(result)
