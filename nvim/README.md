@@ -32,7 +32,8 @@ case-insensitive; flip `M.ignore_case` in `lua/writing/find.lua` for smart-case.
 | Key | Command | Does |
 |---|---|---|
 | `<Leader>kr` | `:Obsidian rename` | **rename a note and rewrite every link to it** |
-| `<Leader>kf` | `:Obsidian follow_link` | follow the `[[link]]` under the cursor |
+| `gf` / `<CR>` | `:Obsidian follow_link` | follow the `[[link]]` under the cursor |
+| `<Leader>kf` | `:Obsidian follow_link` | same, explicitly |
 | `<Leader>kb` | `:Obsidian backlinks` | what links here |
 | `<Leader>ks` | `:Obsidian quick_switch` | jump to a note by title |
 | `<Leader>kn` | `:Obsidian new` | new note |
@@ -51,6 +52,11 @@ Rename rewrites `[[Note]]`, `[[Note|alias]]`, `[[Note#heading]]`, `[[Note#^block
 and `![[Note]]` embeds across the vault. **Use `<Leader>kr` and answer the
 prompt** -- `:Obsidian rename Two Words` fails, because the subcommand takes a
 single argument.
+
+`gf` is routed through the plugin deliberately. Vim's native `gf` builds its
+target from `<cfile>`, and since `'isfname'` contains no space it truncates
+`[[Fortney Nurani, Princess]]` to `Fortney` -- so it appeared to work only for
+links whose first word was already unique. `<CR>` does the same thing.
 
 Renaming any other way -- `mv`, the `<Leader>e` sidebar, a file manager -- will
 **not** update links. That's equally true of Obsidian itself.
