@@ -61,9 +61,37 @@ links whose first word was already unique. `<CR>` does the same thing.
 Renaming any other way -- `mv`, the `<Leader>e` sidebar, a file manager -- will
 **not** update links. That's equally true of Obsidian itself.
 
-Typing `[[` offers completions from the built-in `obsidian-ls` LSP; no separate
-completion engine is needed. The LSP only attaches inside a registered
-workspace, i.e. a directory under `~/Writing` containing `.obsidian/`.
+### Inserting a wikilink
+
+Type `[[`, then **`<C-Space>`** to list matching notes. Completions come from
+the built-in `obsidian-ls` LSP; no separate completion engine is needed.
+
+`<C-Space>` is worth the habit because autocompletion only fires on the
+server's trigger characters (`[`, `#`, `^`). Typing `[[` therefore asks with an
+*empty* query, and the letters you type afterwards don't ask again -- so a menu
+often never appears on its own. `<C-Space>` asks at the point you've reached.
+(`<C-x><C-o>`, vim's built-in omni-completion, does the same thing.)
+
+The completion list includes a **create** entry, so `[[New Note` + `<C-Space>`
+offers to make a note that doesn't exist yet.
+
+The LSP only attaches inside a registered workspace: a directory under
+`~/Writing` containing `.obsidian/`. Outside one, links are inert text.
+
+### Moving around
+
+Standard vim, but worth knowing next to the link keys:
+
+| Key | Does |
+|---|---|
+| `<C-o>` | jump **back** -- e.g. return to the chapter after following a link |
+| `<C-i>` | jump forward again |
+| `<C-^>` | toggle between the two most recent files |
+| `` ` `` `` ` `` | back to your position before the last jump in this file |
+
+`<C-o>` walks a *history* of every jump across files, so pressing it repeatedly
+rewinds your whole path. `<C-^>` just flips between two files, which is usually
+what you want when checking a character sheet while writing a chapter.
 
 ### Writing
 | Key | Command | Does |

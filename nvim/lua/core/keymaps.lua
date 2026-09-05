@@ -51,6 +51,17 @@ map("n", "<Leader>s", "z=", { desc = "Spelling suggestions" })
 --   search  tags  links  footnotes  template  new_from_template  workspace
 --   bookmarks  paste_img  unique_note  today  tomorrow  yesterday  dailies
 --   open  (opens the note in the Obsidian app)  rebuild_cache  check
+-- Manual completion trigger. Autotrigger only fires on the server's trigger
+-- characters ("[", "#", "^"), so typing `[[` requests with an empty query and
+-- the letters you type after it don't re-request. <C-Space> asks explicitly.
+map("i", "<C-Space>", function()
+  if vim.lsp.completion and next(vim.lsp.get_clients({ bufnr = 0 })) then
+    vim.lsp.completion.get()
+  else
+    return "<C-x><C-o>"
+  end
+end, { expr = false, desc = "Trigger completion" })
+
 -- `gf` on a wikilink. Without this it falls through to vim's native file
 -- lookup, which builds its target from <cfile> -- and since 'isfname' has no
 -- space, that truncates [[Fortney Nurani, Princess]] to "Fortney" and fails.

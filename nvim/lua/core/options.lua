@@ -34,6 +34,11 @@ o.signcolumn = "yes"
 
 o.clipboard = "unnamedplus"
 
+-- Completion menu. `menuone` matters: without it a single match is inserted
+-- silently instead of offering a menu, which reads as "completion is broken".
+-- `noselect` keeps you in control of what gets inserted.
+o.completeopt = { "menu", "menuone", "noselect", "popup" }
+
 o.swapfile = false
 o.backup = true
 o.undofile = true
