@@ -3,7 +3,7 @@
   name = Eric B. Budd
 [core]
   editor = vim
-  pager = less -x4
+  pager = less -x4 -+S
   excludesfile = /home/ericbudd/.gitignore_global
   commentchar = "#"
 [push]
@@ -33,3 +33,8 @@
   st = status
 [help]
 	autocorrect = 20
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true

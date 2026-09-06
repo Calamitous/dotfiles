@@ -9,6 +9,7 @@ call vundle#begin()
 " Let Vundle manage Vundle, required
 Plugin 'gmarik/Vundle.vim'
 
+" Install these with `vim +PluginInstall +qall`
 Plugin 'Lokaltog/vim-easymotion'
 Plugin 'godlygeek/tabular'
 " Plugin 'amirh/HTML-AutoCloseTag'
@@ -27,6 +28,16 @@ Plugin 'tpope/vim-surround'
 Plugin 'elixir-editors/vim-elixir'
 Plugin 'junegunn/fzf'
 Plugin 'ledger/vim-ledger'
+Plugin 'junegunn/fzf.vim'
+
+" Plugin 'ctrlpvim/ctrlp.vim'
+" " Plugin 'elixir-lang/vim-elixir'
+" Plugin 'elixir-editors/vim-elixir'
+" Plugin 'elmcast/elm-vim'
+" Plugin 'kchmck/vim-coffee-script'
+" Plugin 'scrooloose/syntastic'
+" Plugin 'tpope/vim-markdown'
+" Plugin 'tpope/vim-rails'
 
 " All of your Plugins must be added before the following line
 call vundle#end()
