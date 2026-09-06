@@ -1,0 +1,6 @@
+extends: existence
+message: "Filter word: '%s' puts a layer between the reader and the POV."
+level: suggestion
+ignorecase: true
+tokens:
+  - '(?:she|he|they) (?:felt|saw|heard|noticed|realized|realised|watched|observed|wondered|decided|knew|thought|seemed to)'

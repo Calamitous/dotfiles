@@ -42,7 +42,8 @@ local function to_clipboard(lines)
         end
         vim.notify("Copy as HTML failed: " .. err, vim.log.levels.ERROR)
       else
-        vim.notify(string.format("Copied %d lines (%d words) as HTML", #lines, words))
+        local commas = require("writing.wordcount").commas
+        vim.notify(string.format("Copied %s lines (%s words) as HTML", commas(#lines), commas(words)))
       end
     end)
   end)

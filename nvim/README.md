@@ -248,6 +248,30 @@ Two rules that matter:
    and plugin state in memory and flushes on change, so external writes can be
    silently clobbered. Read them; don't write them.
 
+## Setting up a vault
+
+```
+cd ~/Writing/some-vault && vault-init      # or :VaultInit inside nvim
+vault-init --dry-run                       # show what it would do
+```
+
+Installs, from `../vault-template/`:
+
+| Path | For |
+|---|---|
+| `.gitignore` | keeps the generated `Meta/*.spl` and Obsidian's per-machine UI state out of git |
+| `.vale.ini`, `.vale/Prose/*.yml` | the prose rules |
+| `Meta/Abbreviations.md` | per-vault abbreviations |
+| `Meta/dictionary.utf-8.add` | shared by vim's speller and harper-ls |
+
+**Non-destructive.** An existing file is never overwritten — it's reported as
+kept. `.gitignore` is the one exception and is only appended to. Safe to re-run,
+including to pick up rules added to the template later.
+
+Edit the templates in `dotfiles/vault-template/`; they're real files, not
+strings in a config, so a rule can be tested with `vale` directly before it goes
+out to a vault.
+
 ## Prose linting
 
 Two checkers, doing different jobs.
@@ -319,7 +343,7 @@ length is a choice.
 |---|---|---|
 | `<Leader>vv` | `:Vale` | lint **this chapter** into the quickfix list |
 | `<Leader>vd` | `:ValeDraft` | lint **every chapter in the book** |
-| | `:ValeInit` | create the config in this vault |
+| | `:VaultInit` | set this vault up (see below) |
 
 > **"file" vs "draft."** A *file* is the buffer you're in — one chapter. A
 > *draft* is the whole book: the scene list in `Index.md`, all 63 of them.
@@ -331,9 +355,9 @@ length is a choice.
 > contains `Index.md`, notes, and the compiled manuscript, and linting that
 > would report every issue in the book twice.
 
-`:ValeInit` writes `.vale.ini` and `.vale/Prose/*.yml` into the vault, so rules
-are versioned with the book and can differ per project. The starting set comes
-from the craft analysis of BBaS:
+The rules are copied into the vault by `:VaultInit`, so they're versioned with
+the book and free to diverge per project. The starting set comes from the craft
+analysis of BBaS:
 
 | Rule | Flags |
 |---|---|
@@ -388,7 +412,13 @@ freshly generated build of BBaS Vol 1 (11,846 lines, 136,525 words).
 | `<Leader>mk` | `:CompileCheck` | build **without writing**, show the diff |
 | `<Leader>ml` | `:CompileList` | drafts in this vault (`*` = selected) |
 
-From a shell: `compile.rb`, `--list`, `--check`, `--docx`, `--select PATH`.
+From a shell: `compile.rb`, `--list`, `--steps`, `--check`, `--docx`, `--select PATH`.
+
+**Modified buffers in the vault are written first.** `compile.rb` reads from
+disk, so without this an unsaved edit is simply absent from the build — and
+because nothing on disk changed, `git status` stays clean and it looks as
+though the compile did nothing. Set `M.autosave = false` in
+`lua/writing/compile.lua` if you'd rather it never wrote for you.
 
 **Which draft?** In order: an `Index.md` above the current file, then this
 tool's own `.compile-draft`, then Longform's remembered selection. So a vault
@@ -412,9 +442,53 @@ compile:
     - msword_hrs
 ```
 
+### Scene steps vs document steps
+
+Steps run in one of three positions, and **position in the list is what decides
+which** — everything before `concatenate` runs once per chapter, everything
+after runs once over the assembled manuscript:
+
+| Kind | Runs | Steps |
+|---|---|---|
+| `scene` | once per chapter | `strip_frontmatter` `remove_links` `crunch_comments` `prepend_title` |
+| `join` | once, combining them | `concatenate` — **exactly one required** |
+| `document` | once over the whole book | `msword_hrs` `markdown_hrs` |
+
+Most steps work in either position; `prepend_title` is scene-only, since it
+needs a chapter title.
+
+**`compile.rb --steps` (`<Leader>ms`) prints the pipeline labelled by kind,
+followed by every step available** — what each one does, and a `*` beside the
+ones this draft uses. That's the quick way both to check an order before
+running it and to see what else you could add. A bad order is caught
+before any work happens:
+
+```
+compile.rb: `prepend_title` cannot run after the join -- it is a scene
+            step. Move it before `concatenate`.
+compile.rb: no join step: add `- concatenate: "\n\n---\n\n"` ...
+```
+
+The missing-join case used to be the dangerous one: it silently joined chapters
+with a blank line instead of your separator, and produced a plausible-looking
+manuscript.
+
 Reorder steps by moving lines. Omit the block entirely and the Longform default
-workflow is used. A vault can add its own steps in `<vault>/bin/compile_steps.rb`,
-so custom behaviour is versioned with the book rather than duplicated here.
+workflow is used. A vault can add its own steps in `<vault>/bin/compile_steps.rb`, so custom
+behaviour is versioned with the book rather than duplicated here. They must be
+module functions and take `(text, scene, opts)`:
+
+```ruby
+module_function
+
+def squash_blanks(text, _scene, _opts)
+  text.gsub(/\n{3,}/, "\n\n")
+end
+```
+
+They appear in `--steps` under *from this vault*, and are exempt from the
+ordering check — they can't declare a kind, so they're assumed to know where
+they belong.
 
 **It never writes Longform's files** -- not `Index.md`, not anything under
 `.obsidian/`. Obsidian caches those in memory and flushes on change, so an

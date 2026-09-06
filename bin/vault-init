@@ -1,0 +1,114 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# vault-init -- set up an Obsidian vault for the nvim writing environment.
+#
+#   cd ~/Writing/some-vault && vault-init
+#   vault-init ~/Writing/some-vault
+#   vault-init --dry-run          show what would happen, change nothing
+#
+# Installs, from dotfiles/vault-template:
+#
+#   .gitignore                    (missing lines appended, never overwritten)
+#   .vale.ini                     vale config, custom rules only
+#   .vale/Prose/*.yml             the prose rules
+#   Meta/Abbreviations.md         per-vault abbreviations, seeded empty
+#   Meta/dictionary.utf-8.add     shared by vim's speller and harper-ls
+#
+# NON-DESTRUCTIVE. An existing file is never overwritten -- it's reported as
+# kept. .gitignore is the one exception and is only ever appended to. Safe to
+# re-run on a vault that's already set up, and safe to run to pick up rules
+# added to the template later.
+
+require 'fileutils'
+require 'optparse'
+
+TEMPLATE = File.expand_path('../vault-template', __dir__)
+
+options = { dry_run: false }
+OptionParser.new do |o|
+  o.banner = 'Usage: vault-init [--dry-run] [vault path]'
+  o.on('-n', '--dry-run', 'Show what would happen; change nothing') { options[:dry_run] = true }
+  o.on('-h', '--help') { puts o; exit }
+end.parse!
+
+def vault_root(from)
+  dir = File.expand_path(from)
+  loop do
+    return dir if Dir.exist?(File.join(dir, '.obsidian'))
+
+    parent = File.dirname(dir)
+    return nil if parent == dir
+
+    dir = parent
+  end
+end
+
+root = vault_root(ARGV[0] || Dir.pwd)
+unless root
+  warn "vault-init: no .obsidian directory found at or above #{ARGV[0] || Dir.pwd}"
+  exit 1
+end
+
+unless Dir.exist?(TEMPLATE)
+  warn "vault-init: template missing at #{TEMPLATE}"
+  exit 1
+end
+
+puts "Vault: #{root}"
+puts '(dry run -- nothing will be written)' if options[:dry_run]
+puts
+
+created = kept = appended = 0
+
+Dir.glob('**/*', File::FNM_DOTMATCH, base: TEMPLATE).sort.each do |rel|
+  src = File.join(TEMPLATE, rel)
+  next unless File.file?(src)
+
+  dst = File.join(root, rel)
+
+  if rel == '.gitignore' && File.file?(dst)
+    have = File.readlines(dst, chomp: true)
+    want = File.readlines(src, chomp: true)
+    missing = want.reject { |line| line.strip.empty? || line.start_with?('#') || have.include?(line) }
+
+    if missing.empty?
+      puts "  keep     #{rel}  (nothing to add)"
+      kept += 1
+    else
+      puts "  append   #{rel}  (+#{missing.length} line#{'s' if missing.length != 1})"
+      unless options[:dry_run]
+        File.open(dst, 'a') do |f|
+          f.puts('') unless have.last.to_s.strip.empty?
+          f.puts('# --- writing environment ---')
+          missing.each { |line| f.puts(line) }
+        end
+      end
+      appended += 1
+    end
+    next
+  end
+
+  if File.exist?(dst)
+    puts "  keep     #{rel}"
+    kept += 1
+  else
+    puts "  create   #{rel}"
+    unless options[:dry_run]
+      FileUtils.mkdir_p(File.dirname(dst))
+      FileUtils.cp(src, dst)
+    end
+    created += 1
+  end
+end
+
+puts
+puts format('%d created, %d appended, %d kept', created, appended, kept)
+
+unless options[:dry_run] || created.zero? && appended.zero?
+  puts
+  puts 'Next: commit the new files so they follow the vault to your other machines.'
+  puts '  .vale/ and .vale.ini      the prose rules'
+  puts '  Meta/                     abbreviations and the shared dictionary'
+  puts '  .gitignore                keeps the generated .spl out'
+end

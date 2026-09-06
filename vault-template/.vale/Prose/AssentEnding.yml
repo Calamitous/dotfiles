@@ -1,0 +1,14 @@
+# `nonword: true` because vale wraps tokens in \b word boundaries by default,
+# which can never match a pattern starting with a quotation mark.
+#
+# Do NOT switch this to `raw`: vale CONCATENATES raw entries into a single
+# regex rather than alternating them, so a multi-pattern raw list silently
+# matches nothing. tokens are OR'd, which is what's wanted here.
+extends: existence
+message: "Assent construction: '%s'. Weak as a chapter ending -- check where this falls."
+level: suggestion
+nonword: true
+tokens:
+  - '"I will[,."]'
+  - '"Yes, (?:father|mother|my lord|my lady)[,."]'
+  - '"As you (?:wish|say)[,."]'

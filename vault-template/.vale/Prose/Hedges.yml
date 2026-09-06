@@ -1,0 +1,6 @@
+extends: existence
+message: "Hedge: '%s' softens the sentence."
+level: suggestion
+ignorecase: true
+tokens:
+  - '\b(?:somewhat|rather|quite|very|really|slightly|a bit|almost|nearly|sort of|kind of)\b'

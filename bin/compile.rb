@@ -34,6 +34,7 @@
 # A vault may define extra steps in <vault>/bin/compile_steps.rb; they're
 # loaded automatically and can be referenced by name in the steps list.
 
+require 'set'
 require 'yaml'
 require 'date'
 require 'json'
@@ -43,11 +44,52 @@ require 'optparse'
 module Compile
   class Error < StandardError; end
 
-  # ---------------------------------------------------------------- Steps --
+  # 136525 -> "136,525"
+  def self.commas(number)
+    number.to_s.gsub(/(\d)(?=(\d{3})+\z)/, '\\1,')
+  end
+
 
   # Each step takes (text, scene, options) and returns text. `scene` is nil for
   # steps that run once over the joined manuscript.
   module Steps
+
+    # ---------------------------------------------------------------- Steps --
+
+    # Which position each step may occupy, mirroring Longform's availableKinds:
+    #
+    #   :scene     runs once per chapter, BEFORE the join
+    #   :join      combines the chapters into one document (exactly one of these)
+    #   :document  runs once over the whole manuscript, AFTER the join
+    #
+    # Position in the `steps:` list decides which a step is -- anything before
+    # `concatenate` is a scene step, anything after is a document step -- so this
+    # table is what catches an order that can't work.
+    STEP_KINDS = {
+      'strip_frontmatter' => %i[scene document],
+      'remove_links' => %i[scene document],
+      'remove_wikilinks' => %i[scene document],
+      'remove_external_links' => %i[scene document],
+      'crunch_comments' => %i[scene document],
+      'prepend_title' => %i[scene],
+      'concatenate' => %i[join],
+      'msword_hrs' => %i[scene document],
+      'markdown_hrs' => %i[scene document]
+    }.freeze
+
+    # One line each, for `--steps`.
+    STEP_DESCRIPTIONS = {
+      'strip_frontmatter' => 'remove the YAML frontmatter block',
+      'remove_links' => 'wikilinks and [text](url) reduced to their text',
+      'remove_wikilinks' => '[[Note|shown]] -> shown',
+      'remove_external_links' => '[shown](url) -> shown',
+      'crunch_comments' => 'drop %%obsidian%% and <!-- html --> comments',
+      'prepend_title' => 'add a heading; $title and $n are substituted',
+      'concatenate' => 'join the chapters with a separator',
+      'msword_hrs' => '--- becomes +++ so pandoc makes correct Word docs',
+      'markdown_hrs' => 'the inverse: +++ back to ---'
+    }.freeze
+
     module_function
 
     # NOTE: the trailing newline after the closing `---` is deliberately NOT
@@ -179,9 +221,44 @@ module Compile
       load_custom_steps
     end
 
+    # Check the pipeline before doing any work, so a bad order is a clear
+    # message rather than a nil-error backtrace half way through.
+    def validate!
+      parsed = @draft.steps.map { |step| parse_step(step).first }
+
+      joins = parsed.each_index.select { |i| Steps::STEP_KINDS[parsed[i]] == [:join] }
+
+      if joins.empty?
+        raise Error, "no join step: add `- concatenate: \"\\n\\n---\\n\\n\"` " \
+                     'to combine the chapters (without it they are joined with a blank line)'
+      end
+      if joins.length > 1
+        raise Error, "#{joins.length} join steps; there must be exactly one"
+      end
+
+      join_at = joins.first
+
+      parsed.each_with_index do |name, i|
+        next if i == join_at
+
+        allowed = Steps::STEP_KINDS[name]
+        next if allowed.nil? # custom step from the vault: assume it knows
+
+        position = i < join_at ? :scene : :document
+        next if allowed.include?(position)
+
+        where = position == :scene ? 'before' : 'after'
+        want = allowed.include?(:scene) ? 'before' : 'after'
+        raise Error, "`#{name}` cannot run #{where} the join -- it is a " \
+                     "#{allowed.join('/')} step. Move it #{want} `concatenate`."
+      end
+    end
+
     def run
       missing = @draft.missing
       raise Error, "missing scene files:\n  #{missing.join("\n  ")}" unless missing.empty?
+
+      validate!
 
       texts = @draft.scenes.each_with_index.map do |scene, i|
         { title: scene, index: i + 1, text: File.read(@draft.scene_path(scene)) }
@@ -208,7 +285,11 @@ module Compile
       joined || texts.map { |t| t[:text] }.join("\n\n")
     end
 
-    private
+    # Extra steps a vault defines in bin/compile_steps.rb. They must be module
+    # functions (`def self.name` or `module_function`) to be callable here.
+    def custom_steps
+      @custom.singleton_methods.map(&:to_s).sort
+    end
 
     def parse_step(step)
       return [step, nil] if step.is_a?(String)
@@ -216,6 +297,8 @@ module Compile
 
       raise Error, "malformed step: #{step.inspect}"
     end
+
+    private
 
     def apply(name, text, scene, opts)
       if @custom.respond_to?(name)
@@ -328,6 +411,7 @@ parser = OptionParser.new do |o|
   o.on('--list', 'List drafts in this vault') { options[:list] = true }
   o.on('--check', "Compile but don't write; diff against the current output") { options[:write] = false }
   o.on('--docx', 'Also render a .docx via pandoc') { options[:docx] = true }
+  o.on('--steps', 'Show the compile pipeline for this draft') { options[:steps] = true }
   o.on('--select PATH', 'Remember PATH as this vault\'s draft') { |p| options[:select] = p }
   o.on('-h', '--help') { puts o; exit }
 end
@@ -342,7 +426,7 @@ begin
     Compile.drafts(vault).each do |p|
       d = Compile::Draft.new(p)
       marker = (p == current ? '*' : ' ')
-      puts format('%s %-46s %3d scenes', marker, d.title[0, 46], d.scenes.length)
+      puts format('%s %-46s %5s scenes', marker, d.title[0, 46], Compile.commas(d.scenes.length))
     end
     exit
   end
@@ -358,7 +442,63 @@ begin
   raise Compile::Error, 'no draft found' unless index
 
   draft = Compile::Draft.new(index)
-  text = Compile::Runner.new(draft, vault: vault).run
+  runner = Compile::Runner.new(draft, vault: vault)
+
+  if options[:steps]
+    runner.validate!
+    names = draft.steps.map { |st| runner.parse_step(st).first }
+    join_at = names.index { |n| Compile::Steps::STEP_KINDS[n] == [:join] }
+    puts "#{draft.title}  (#{Compile.commas(draft.scenes.length)} scenes)"
+    puts "  source: #{File.basename(draft.path)}#{draft.config.empty? ? '  [built-in defaults]' : ''}"
+    puts
+    names.each_with_index do |name, i|
+      kind = i == join_at ? 'join    ' : (i < join_at ? 'scene   ' : 'document')
+      puts format('  %-8s %s', kind, name)
+    end
+    puts
+    puts '  scene    = runs once per chapter'
+    puts '  join     = combines them into one document'
+    puts '  document = runs once over the whole manuscript'
+    puts
+
+    used = names.to_set rescue names
+    mark = ->(n) { (used.include?(n) ? '*' : ' ') }
+
+    groups = {
+      'scene or document' => [],
+      'scene only' => [],
+      'join' => []
+    }
+    Compile::Steps::STEP_KINDS.each do |name, kinds|
+      key = if kinds == [:join] then 'join'
+            elsif kinds == [:scene] then 'scene only'
+            else 'scene or document'
+            end
+      groups[key] << name
+    end
+
+    puts 'Available steps   (* = used above)'
+    groups.each do |label, list|
+      next if list.empty?
+
+      puts "  #{label}:"
+      list.sort.each do |name|
+        puts format('    %s %-24s %s', mark.call(name), name,
+                    Compile::Steps::STEP_DESCRIPTIONS[name] || '')
+      end
+    end
+
+    custom = runner.custom_steps
+    puts '  from this vault (bin/compile_steps.rb):'
+    if custom.empty?
+      puts '      (none)'
+    else
+      custom.each { |name| puts format('    %s %s', mark.call(name), name) }
+    end
+    exit
+  end
+
+  text = runner.run
   target = draft.output
 
   words = text.split(/\s+/).length
@@ -366,7 +506,7 @@ begin
   if options[:write]
     File.write(target, text)
     puts format('%s -> %s', draft.title, File.basename(target))
-    puts format('  %d scenes, %d words', draft.scenes.length, words)
+    puts format('  %s scenes, %s words', Compile.commas(draft.scenes.length), Compile.commas(words))
 
     if options[:docx]
       docx = target.sub(/\.md\z/, '.docx')
@@ -380,14 +520,14 @@ begin
         f.write(text)
         f.flush
         if system('diff', '-q', target, f.path, out: File::NULL)
-          puts "IDENTICAL to #{File.basename(target)} (#{words} words)"
+          puts "IDENTICAL to #{File.basename(target)} (#{Compile.commas(words)} words)"
         else
           puts "DIFFERS from #{File.basename(target)}"
           system('diff', target, f.path)
         end
       end
     else
-      puts "would write #{File.basename(target)} (#{words} words)"
+      puts "would write #{File.basename(target)} (#{Compile.commas(words)} words)"
     end
   end
 rescue Compile::Error => e

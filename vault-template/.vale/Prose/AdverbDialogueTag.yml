@@ -1,0 +1,6 @@
+extends: existence
+message: "Adverbial dialogue tag: '%s'. Let the line carry the tone."
+level: suggestion
+ignorecase: true
+tokens:
+  - '(?:said|asked|replied|answered|whispered|shouted) \w+ly'

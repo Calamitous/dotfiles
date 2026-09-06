@@ -7,6 +7,12 @@ local vault = require("writing.vault")
 
 local M = {}
 
+--- 136525 -> "136,525"
+function M.commas(n)
+  local out = tostring(n):reverse():gsub("(%d%d%d)", "%1,"):reverse()
+  return (out:gsub("^,", ""))
+end
+
 --- Count words the way a manuscript should be counted: no frontmatter, no
 --- comments, no wikilink syntax.
 --- @param text string
@@ -58,17 +64,20 @@ local function natural_lt(a, b)
 end
 
 local function report(title, rows, total)
-  local width = 0
+  local width, num_width = 0, #M.commas(total)
   for _, row in ipairs(rows) do
     width = math.max(width, #row.name)
   end
 
-  local out = { title, string.rep("-", math.max(#title, width + 10)) }
+  local rule = string.rep("-", math.max(#title, width + num_width + 2))
+  local line = "%-" .. width .. "s  %" .. num_width .. "s"
+
+  local out = { title, rule }
   for _, row in ipairs(rows) do
-    table.insert(out, string.format("%-" .. width .. "s  %7d", row.name, row.words))
+    table.insert(out, string.format(line, row.name, M.commas(row.words)))
   end
-  table.insert(out, string.rep("-", math.max(#title, width + 10)))
-  table.insert(out, string.format("%-" .. width .. "s  %7d", "TOTAL", total))
+  table.insert(out, rule)
+  table.insert(out, string.format(line, "TOTAL", M.commas(total)))
 
   vim.api.nvim_echo(
     vim.tbl_map(function(l) return { l .. "\n" } end, out),
@@ -128,7 +137,7 @@ end
 
 function M.setup()
   vim.api.nvim_create_user_command("WordCount", function()
-    vim.notify(string.format("%d words", M.count_buffer(0)))
+    vim.notify(string.format("%s words", M.commas(M.count_buffer(0))))
   end, { desc = "Word count for this buffer" })
 
   vim.api.nvim_create_user_command("WordCountDir", function(opts)

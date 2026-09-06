@@ -56,6 +56,7 @@ M.sections = {
     { "<Leader>mc", "compile the manuscript" },
     { "<Leader>mk", "compile check (diff only)" },
     { "<Leader>ml", "list drafts" },
+    { "<Leader>ms", "show compile pipeline" },
     { "<Leader>wc", "word count: buffer" },
     { "<Leader>wd", "word count: draft" },
     { "<Leader>wD", "word count: directory" },
@@ -63,6 +64,7 @@ M.sections = {
   { "VAULT", {
     { "<Leader>wv", "which vault / draft?" },
     { "<Leader>wa", "edit abbreviations" },
+    { ":VaultInit", "set up a new vault" },
     { "<Leader>wA", "reload abbreviations" },
   } },
 }

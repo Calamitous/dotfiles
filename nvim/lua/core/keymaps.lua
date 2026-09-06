@@ -112,6 +112,7 @@ map("n", "<Leader>mc", "<Cmd>Compile<CR>", { desc = "Compile manuscript" })
 map({ "n", "i" }, "<F9>", "<Cmd>Compile<CR>", { desc = "Compile manuscript" })
 map("n", "<Leader>mk", "<Cmd>CompileCheck<CR>", { desc = "Compile check (diff only)" })
 map("n", "<Leader>ml", "<Cmd>CompileList<CR>", { desc = "List drafts" })
+map("n", "<Leader>ms", "<Cmd>CompileSteps<CR>", { desc = "Show compile pipeline" })
 
 -- Checkboxes
 map("n", "<Leader>l", "<Cmd>CheckboxToggle<CR>", { desc = "Toggle checkbox" })

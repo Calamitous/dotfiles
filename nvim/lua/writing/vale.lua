@@ -2,75 +2,16 @@
 --
 -- Deliberately no shipped styles. Vale's Microsoft/Google/write-good packages
 -- are technical-writing house styles, which is why pointing stock Vale at
--- fiction makes it sound like documentation. `:ValeInit` scaffolds a config
--- with custom rules only, drawn from the craft analysis of this manuscript.
+-- fiction makes it sound like documentation.
 --
--- Rules live in the vault (<vault>/.vale/), so they're versioned with the book
--- and can differ per project. Delete any rule that turns out to be noisy --
--- that's the intended workflow, not a failure.
+-- The rules themselves live in dotfiles/vault-template/.vale/, and are copied
+-- into a vault by `bin/vault-init` (`:VaultInit`). Once copied they belong to
+-- that vault -- versioned with the book, and free to diverge per project.
+-- Delete any rule that turns out to be noisy; that's the intended workflow.
 
 local vault = require("writing.vault")
 
 local M = {}
-
-M.rules = {}
-
-M.rules["FilterWords.yml"] = [[
-extends: existence
-message: "Filter word: '%s' puts a layer between the reader and the POV."
-level: suggestion
-ignorecase: true
-tokens:
-  - '(?:she|he|they) (?:felt|saw|heard|noticed|realized|realised|watched|observed|wondered|decided|knew|thought|seemed to)'
-]]
-
-M.rules["AdverbDialogueTag.yml"] = [[
-extends: existence
-message: "Adverbial dialogue tag: '%s'. Let the line carry the tone."
-level: suggestion
-ignorecase: true
-tokens:
-  - '(?:said|asked|replied|answered|whispered|shouted) \w+ly'
-]]
-
--- NOTE: `nonword: true`. Vale wraps tokens in \b word boundaries by default,
--- which can never match a pattern starting with a quotation mark.
--- Do NOT reach for `raw` here: Vale CONCATENATES raw entries into a single
--- regex rather than alternating them, so a multi-pattern raw list silently
--- matches nothing. tokens are OR'd, which is what's wanted.
-M.rules["AssentEnding.yml"] = [[
-extends: existence
-message: "Assent construction: '%s'. Weak as a chapter ending -- check where this falls."
-level: suggestion
-nonword: true
-tokens:
-  - '"I will[,."]'
-  - '"Yes, (?:father|mother|my lord|my lady)[,."]'
-  - '"As you (?:wish|say)[,."]'
-]]
-
-M.rules["Hedges.yml"] = [[
-extends: existence
-message: "Hedge: '%s' softens the sentence."
-level: suggestion
-ignorecase: true
-tokens:
-  - '\b(?:somewhat|rather|quite|very|really|slightly|a bit|almost|nearly|sort of|kind of)\b'
-]]
-
-M.config_ini = [[
-# Vale configuration -- custom rules only.
-#
-# No packages are installed on purpose: Vale's shipped styles (Microsoft,
-# Google, write-good) are technical-writing house styles and make fiction read
-# like documentation.
-
-StylesPath = .vale
-MinAlertLevel = suggestion
-
-[*.md]
-BasedOnStyles = Prose
-]]
 
 -- Dismissals ----------------------------------------------------------------
 --
@@ -160,7 +101,8 @@ function M.undismiss_all()
   end
 end
 
---- Create .vale.ini and the rule files in the current vault.
+--- Set this vault up: vale rules, dictionary, abbreviations, .gitignore.
+--- Delegates to bin/vault-init so the templates have one home.
 function M.init()
   local root = vault.root()
   if not root then
@@ -168,30 +110,31 @@ function M.init()
     return
   end
 
-  local dir = root .. "/.vale/Prose"
-  vim.fn.mkdir(dir, "p")
-
-  local ini = root .. "/.vale.ini"
-  local created = {}
-
-  if vim.fn.filereadable(ini) == 0 then
-    vim.fn.writefile(vim.split(M.config_ini, "\n"), ini)
-    table.insert(created, ".vale.ini")
+  local script = vim.fn.exepath("vault-init")
+  if script == "" then
+    script = vim.fn.expand("~/.local/bin/vault-init")
+  end
+  if vim.fn.filereadable(script) == 0 then
+    vim.notify("vault-init not found (expected on PATH or at ~/.local/bin)", vim.log.levels.ERROR)
+    return
   end
 
-  for name, body in pairs(M.rules) do
-    local path = dir .. "/" .. name
-    if vim.fn.filereadable(path) == 0 then
-      vim.fn.writefile(vim.split(body, "\n"), path)
-      table.insert(created, ".vale/Prose/" .. name)
-    end
-  end
-
-  if #created == 0 then
-    vim.notify("Vale config already present in " .. vim.fs.basename(root))
-  else
-    vim.notify("Created:\n  " .. table.concat(created, "\n  "))
-  end
+  vim.system({ script, root }, { text = true }, function(res)
+    vim.schedule(function()
+      local out = vim.trim((res.stdout or "") .. (res.stderr or ""))
+      if res.code ~= 0 then
+        vim.notify("vault-init failed:\n" .. out, vim.log.levels.ERROR)
+        return
+      end
+      vim.cmd("botright new")
+      local buf = vim.api.nvim_get_current_buf()
+      vim.bo[buf].buftype = "nofile"
+      vim.bo[buf].bufhidden = "wipe"
+      vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(out, "\n"))
+      vim.bo[buf].modifiable = false
+      vim.api.nvim_win_set_height(0, math.min(#vim.split(out, "\n") + 1, 18))
+    end)
+  end)
 end
 
 --- Lint one or more paths into the quickfix list.
@@ -208,7 +151,7 @@ function M.run(path)
     return
   end
   if vim.fn.filereadable(root .. "/.vale.ini") == 0 then
-    vim.notify("No .vale.ini in this vault -- run :ValeInit", vim.log.levels.WARN)
+    vim.notify("No .vale.ini in this vault -- run :VaultInit", vim.log.levels.WARN)
     return
   end
 
@@ -310,7 +253,8 @@ function M.setup()
   end, { nargs = "?", complete = "file", desc = "Lint prose with Vale" })
 
   vim.api.nvim_create_user_command("ValeDraft", M.draft, { desc = "Lint the whole draft with Vale" })
-  vim.api.nvim_create_user_command("ValeInit", M.init, { desc = "Create Vale config in this vault" })
+  vim.api.nvim_create_user_command("VaultInit", M.init, { desc = "Set this vault up for writing" })
+  vim.api.nvim_create_user_command("ValeInit", M.init, { desc = "Alias for :VaultInit" })
   vim.api.nvim_create_user_command("ValeDismiss", M.dismiss, { desc = "Dismiss the Vale entry under the cursor" })
   vim.api.nvim_create_user_command("ValeUndismissAll", M.undismiss_all, { desc = "Clear all Vale dismissals" })
 
