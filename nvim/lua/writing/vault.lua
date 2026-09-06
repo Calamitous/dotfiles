@@ -4,6 +4,19 @@
 
 local M = {}
 
+--- Directory inside a vault for this tooling's own files -- abbreviations and
+--- the shared dictionary. Hidden, so it groups with .vale/ and
+--- .harper-ignored/ rather than competing with a vault's own note folders
+--- (BBaS already has a "Metadata" directory, and "Meta" beside it was
+--- needlessly confusing).
+M.support = ".writing"
+
+--- Path to one of this tooling's files in the current vault.
+function M.support_path(name, bufnr)
+  local root = M.root(bufnr)
+  return root and (root .. "/" .. M.support .. "/" .. name) or nil
+end
+
 --- Nearest ancestor directory containing `.obsidian/`.
 --- @param bufnr integer|nil  defaults to current buffer
 --- @return string|nil  absolute path to the vault root

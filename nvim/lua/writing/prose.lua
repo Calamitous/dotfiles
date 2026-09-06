@@ -15,15 +15,15 @@ local M = {}
 
 M.thesaurus = vim.fn.expand("~/.vim/thesaurus/mthesaur.txt")
 
---- Per-vault spelling dictionary, relative to the vault root. `zg` adds the
+--- Per-vault spelling dictionary, inside vault.support. `zg` adds the
 --- word under the cursor; `zw` marks one wrong; `z=` suggests. Because it lives
 --- in the vault, invented vocabulary travels with the book in its own repo --
---- the same arrangement as Meta/Abbreviations.md.
-M.spellfile = "Meta/dictionary.utf-8.add"
+--- the same arrangement as the abbreviations file beside it.
+M.spellfile = "dictionary.utf-8.add"
 
 --- Point 'spellfile' at this vault's dictionary, creating the folder if needed.
 local function set_spellfile(bufnr)
-  local path = vault.path(M.spellfile, bufnr)
+  local path = vault.support_path(M.spellfile, bufnr)
   if not path then
     return
   end

@@ -4,7 +4,7 @@
 -- makes this per-vault for free: two buffers from different vaults can carry
 -- different sets at the same time, and switching vaults needs no teardown.
 --
--- Source file: <vault>/Meta/Abbreviations.md  (editable from Obsidian too).
+-- Source file: <vault>/.writing/Abbreviations.md (see vault.support).
 -- Accepts a markdown table, or plain `lhs = rhs` lines:
 --
 --   | Abbr | Expands to |
@@ -20,7 +20,12 @@ local vault = require("writing.vault")
 
 local M = {}
 
-M.relative_path = "Meta/Abbreviations.md"
+M.filename = "Abbreviations.md"
+
+--- Full vault-relative path, derived from vault.support.
+function M.relative()
+  return vault.support .. "/" .. M.filename
+end
 
 local function is_separator(line)
   return line:match("^%s*|?[%s:|-]+|?%s*$") ~= nil and line:match("%-%-") ~= nil
@@ -72,7 +77,7 @@ end
 function M.apply(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
 
-  local path = vault.path(M.relative_path, bufnr)
+  local path = vault.support_path(M.filename, bufnr)
   if not path or not vim.uv.fs_stat(path) then
     return 0
   end
@@ -111,7 +116,7 @@ end
 
 --- Open the current vault's abbreviations file, seeding it if absent.
 function M.edit()
-  local path = vault.path(M.relative_path)
+  local path = vault.support_path(M.filename)
   if not path then
     vim.notify("Not inside an Obsidian vault", vim.log.levels.WARN)
     return
@@ -148,7 +153,7 @@ function M.setup()
   -- `<Leader>wa`, type, `:w` -- no separate reload step.
   vim.api.nvim_create_autocmd("BufWritePost", {
     group = group,
-    pattern = "*/" .. M.relative_path,
+    pattern = "*/" .. M.relative(),
     callback = function()
       M.reload()
     end,

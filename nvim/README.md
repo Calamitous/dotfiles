@@ -134,7 +134,7 @@ numerically (`2 -` before `10 -`).
 
 ## Per-vault abbreviations
 
-Each vault can define its own, in `<vault>/Meta/Abbreviations.md` — editable
+Each vault can define its own, in `<vault>/.writing/Abbreviations.md` — editable
 from Obsidian too. Either syntax works:
 
 ```markdown
@@ -159,7 +159,7 @@ Obsidian or pulled from git.
 ## Spelling
 
 A fantasy manuscript is full of words no dictionary has, so each vault keeps its
-own dictionary at `<vault>/Meta/dictionary.utf-8.add`:
+own dictionary at `<vault>/.writing/dictionary.utf-8.add`:
 
 | Key | Does |
 |---|---|
@@ -183,13 +183,13 @@ them independently: if either is on, both go off; if both are off, both come
 on — so they can't drift out of step.
 
 The dictionary lives in the vault, so invented vocabulary travels with the book
-in its own git repo -- the same arrangement as `Meta/Abbreviations.md`.
+in its own git repo -- the same arrangement as `.writing/Abbreviations.md`.
 
 `zg` also writes a compiled `dictionary.utf-8.add.spl` beside it. Commit the
 `.add` (it's your word list); the `.spl` is generated and can be ignored:
 
 ```gitignore
-Meta/*.spl
+.writing/*.spl
 ```
 
 Misspellings are **underlined** by default. Undercurl is deliberately not the
@@ -250,6 +250,12 @@ Two rules that matter:
 
 ## Setting up a vault
 
+This tooling keeps its per-vault files in **`.writing/`** — hidden, so it sits
+with `.vale/` and `.harper-ignored/` rather than among your own note folders.
+The name is one constant, `M.support` in `lua/writing/vault.lua`; change it
+there and the spellfile, harper's dictionary and the abbreviations all follow.
+
+
 ```
 cd ~/Writing/some-vault && vault-init      # or :VaultInit inside nvim
 vault-init --dry-run                       # show what it would do
@@ -259,10 +265,10 @@ Installs, from `../vault-template/`:
 
 | Path | For |
 |---|---|
-| `.gitignore` | keeps the generated `Meta/*.spl` and Obsidian's per-machine UI state out of git |
+| `.gitignore` | keeps the generated `.writing/*.spl` and Obsidian's per-machine UI state out of git |
 | `.vale.ini`, `.vale/Prose/*.yml` | the prose rules |
-| `Meta/Abbreviations.md` | per-vault abbreviations |
-| `Meta/dictionary.utf-8.add` | shared by vim's speller and harper-ls |
+| `.writing/Abbreviations.md` | per-vault abbreviations |
+| `.writing/dictionary.utf-8.add` | shared by vim's speller and harper-ls |
 
 **Non-destructive.** An existing file is never overwritten — it's reported as
 kept. `.gitignore` is the one exception and is only appended to. Safe to re-run,
@@ -328,7 +334,7 @@ the server, so nothing is recomputed when you turn it back on. To start every
 session quiet, set `M.enabled_by_default = false` in `lua/core/lsp.lua` and
 switch it on when you revise.
 
-It reads **the same dictionary `zg` writes** (`Meta/dictionary.utf-8.add`), so a
+It reads **the same dictionary `zg` writes** (`.writing/dictionary.utf-8.add`), so a
 word added while writing is known to the spell checker and the grammar checker
 both. Adding the existing BBaS dictionary dropped its diagnostics on one
 chapter from 119 to 77.
