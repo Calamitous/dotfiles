@@ -59,8 +59,18 @@ alias flush_dns_cache="sudo service dnsmasq restart && sudo systemctl is-active 
 alias bbs_term="rxvt -fn vga11x19 -bg black -fg white"
 alias df_short="df | grep --color=never \"\(sd[ab]1\|Filesystem\)\""
 alias fix_keyboard_caps="setxkbmap -option caps:escape"
-alias pbpaste="xclip -selection clipboard -o"
-alias pbcopy="xclip -selection clipboard -i"
+
+# macOS has pbcopy/pbpaste natively, so shim them only where they're missing.
+# Testing for the command rather than the OS keeps this correct on all platforms.
+if ! command -v pbcopy > /dev/null 2>&1; then
+	if [[ -n "$WAYLAND_DISPLAY" ]] && command -v wl-copy > /dev/null 2>&1; then
+		alias pbcopy="wl-copy"
+		alias pbpaste="wl-paste"
+	elif command -v xclip > /dev/null 2>&1; then
+		alias pbcopy="xclip -selection clipboard -i"
+		alias pbpaste="xclip -selection clipboard -o"
+	fi
+fi
 
 alias watch_dvd="mplayer dvdnav:// -mouse-movements -dvd-device "
 
