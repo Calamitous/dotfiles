@@ -38,6 +38,7 @@ ln -s ~/Projects/dotfiles/bin/scriptorium ~/.local/bin/scriptorium
 ln -s ~/Projects/dotfiles/bin/compile.rb ~/.local/bin/compile.rb
 ln -s ~/Projects/dotfiles/bin/vault-init ~/.local/bin/vault-init
 ln -s ~/Projects/dotfiles/zsh_aliases ~/.zsh_aliases
+ln -s ~/Projects/dotfiles/bin/vault-init ~/.local/bin/vault-init
 ln -s ~/Projects/dotfiles/zshrc ~/.zshrc
 ln -s ~/Projects/dotfiles/zpreztorc ~/.zpreztorc
 mkdir ~/.i3
