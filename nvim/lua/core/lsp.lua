@@ -11,6 +11,10 @@ local M = {}
 
 M.dictionary = "Meta/dictionary.utf-8.add"
 
+--- Start with grammar checking on? Set false to draft undisturbed and turn it
+--- on when you revise; `:Harper` toggles it either way.
+M.enabled_by_default = true
+
 --- Linters tuned for fiction rather than documentation. Prose breaks several
 --- of harper's defaults on purpose: dialogue is full of fragments, and
 --- sentence length is a stylistic choice.
@@ -32,6 +36,10 @@ function M.setup()
   if vim.fn.executable("harper-ls") ~= 1 then
     return
   end
+
+  vim.api.nvim_create_user_command("Harper", function()
+    M.toggle()
+  end, { desc = "Toggle harper grammar checking" })
 
   vim.lsp.config("harper_ls", {
     cmd = { "harper-ls", "--stdio" },
@@ -73,14 +81,53 @@ function M.setup()
     end,
   })
 
-  -- Diagnostics: unobtrusive while drafting.
+  -- Diagnostics: quiet, but the reason for the one under the cursor is shown
+  -- without having to ask. `virtual_lines.current_line` renders only the
+  -- current line's message, so the page isn't littered with them.
   vim.diagnostic.config({
     virtual_text = false,
+    virtual_lines = { current_line = true },
     underline = true,
     signs = true,
     severity_sort = true,
     float = { border = "rounded", source = true },
   })
+
+  if not M.enabled_by_default then
+    vim.schedule(function()
+      M.enable(false)
+    end)
+  end
+end
+
+--- Harper's diagnostic namespaces (one per client).
+local function namespaces()
+  local out = {}
+  for _, client in ipairs(vim.lsp.get_clients({ name = "harper_ls" })) do
+    table.insert(out, vim.lsp.diagnostic.get_namespace(client.id))
+  end
+  return out
+end
+
+--- Turn harper's diagnostics on or off, leaving every other source alone.
+function M.enable(on)
+  local ns = namespaces()
+  if #ns == 0 then
+    vim.notify("harper-ls isn't running here", vim.log.levels.WARN)
+    return
+  end
+  for _, id in ipairs(ns) do
+    vim.diagnostic.enable(on, { ns_id = id })
+  end
+  M.on = on
+end
+
+function M.toggle()
+  if M.on == nil then
+    M.on = true
+  end
+  M.enable(not M.on)
+  vim.notify("Harper " .. (M.on and "on" or "off"))
 end
 
 return M

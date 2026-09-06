@@ -241,9 +241,19 @@ not errors, with no virtual text.
 
 | Key | Does |
 |---|---|
+| `<Leader>h` | **turn grammar checking on/off** |
 | `]d` / `[d` | next / previous suggestion |
-| `<Leader>d` | show the suggestion under the cursor |
+| `<Leader>d` | full detail for the one under the cursor |
 | `<Leader>a` | accept a fix (code action) |
+
+**Why is this word underlined?** The message for the line your cursor is on
+appears beneath it automatically -- only that line, so the page isn't littered.
+`<Leader>d` opens the full detail in a float; `<Leader>a` offers the fix.
+
+**Drafting vs revising.** `<Leader>h` (`:Harper`) silences it without stopping
+the server, so nothing is recomputed when you turn it back on. To start every
+session quiet, set `M.enabled_by_default = false` in `lua/core/lsp.lua` and
+switch it on when you revise.
 
 It reads **the same dictionary `zg` writes** (`Meta/dictionary.utf-8.add`), so a
 word added while writing is known to the spell checker and the grammar checker
