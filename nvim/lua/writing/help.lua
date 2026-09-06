@@ -52,6 +52,7 @@ M.sections = {
     { "x", "(in quickfix) won't do" },
   } },
   { "MANUSCRIPT", {
+    { "<F9>", "compile the manuscript" },
     { "<Leader>mc", "compile the manuscript" },
     { "<Leader>mk", "compile check (diff only)" },
     { "<Leader>ml", "list drafts" },

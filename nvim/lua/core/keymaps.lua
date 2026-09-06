@@ -108,6 +108,8 @@ map("n", "[q", "<Cmd>cprevious<CR>", { desc = "Previous quickfix entry" })
 
 -- Manuscript
 map("n", "<Leader>mc", "<Cmd>Compile<CR>", { desc = "Compile manuscript" })
+-- <Cmd> works from insert mode too, so a build mid-draft doesn't drop you out.
+map({ "n", "i" }, "<F9>", "<Cmd>Compile<CR>", { desc = "Compile manuscript" })
 map("n", "<Leader>mk", "<Cmd>CompileCheck<CR>", { desc = "Compile check (diff only)" })
 map("n", "<Leader>ml", "<Cmd>CompileList<CR>", { desc = "List drafts" })
 

@@ -383,7 +383,8 @@ freshly generated build of BBaS Vol 1 (11,846 lines, 136,525 words).
 
 | Key | Command | Does |
 |---|---|---|
-| `<Leader>mc` | `:Compile` | build the manuscript |
+| **`<F9>`** | `:Compile` | build the manuscript (works from insert mode too) |
+| `<Leader>mc` | `:Compile` | same |
 | `<Leader>mk` | `:CompileCheck` | build **without writing**, show the diff |
 | `<Leader>ml` | `:CompileList` | drafts in this vault (`*` = selected) |
 
