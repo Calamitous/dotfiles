@@ -13,6 +13,17 @@
 #   compile.rb --check             compile but don't write; diff against target
 #   compile.rb --docx              also render a .docx via pandoc
 #
+# WHICH DRAFT gets compiled, first match wins:
+#
+#   1. the nearest Index.md at or above the working directory -- so standing in
+#      a book's folder compiles that book, and nvim (which runs this from the
+#      buffer's directory) compiles whatever you're editing
+#   2. <vault>/.compile-draft, set by --select
+#   3. Longform's own selectedDraftVaultPath, read from its data.json
+#   4. the only draft, if the vault has exactly one
+#
+# Otherwise it lists the drafts and stops. It never guesses between them.
+#
 # READ-ONLY toward Obsidian. It never writes Index.md or anything under
 # .obsidian/ -- Obsidian caches those in memory and flushes on change, so an
 # outside write can be silently clobbered.
@@ -28,7 +39,7 @@
 #       - remove_links
 #       - crunch_comments
 #       - prepend_title: "# Chapter $title"
-#       - concatenate: "\n\n---\n\n"
+#       - concatenate: "\n\n"
 #       - msword_hrs
 #
 # A vault may define extra steps in <vault>/bin/compile_steps.rb; they're
@@ -135,7 +146,7 @@ module Compile
     end
 
     def concatenate(parts, _scene, opts)
-      separator = opts.is_a?(String) ? opts : "\n\n---\n\n"
+      separator = opts.is_a?(String) ? opts : "\n\n"
       parts.join(separator)
     end
 
@@ -161,7 +172,7 @@ module Compile
       'remove_links',
       'crunch_comments',
       { 'prepend_title' => '# Chapter $title' },
-      { 'concatenate' => "\n\n---\n\n" },
+      { 'concatenate' => "\n\n" },
       'msword_hrs'
     ].freeze
 
@@ -229,7 +240,7 @@ module Compile
       joins = parsed.each_index.select { |i| Steps::STEP_KINDS[parsed[i]] == [:join] }
 
       if joins.empty?
-        raise Error, "no join step: add `- concatenate: \"\\n\\n---\\n\\n\"` " \
+        raise Error, "no join step: add `- concatenate: \"\\n\\n\"` " \
                      'to combine the chapters (without it they are joined with a blank line)'
       end
       if joins.length > 1
@@ -394,8 +405,36 @@ module Compile
       return path if File.file?(path)
     end
 
-    # 3. Longform's selection
-    longform_selection(vault) || drafts(vault).first
+    # 3. Longform's own selection
+    chosen = longform_selection(vault)
+    return chosen if chosen
+
+    # 4. A vault with exactly one draft is unambiguous; more than one is not,
+    #    and guessing is worse than saying so.
+    available = drafts(vault)
+    return available.first if available.length == 1
+
+    if available.empty?
+      raise Error, "no drafts in #{vault} (looked for an Index.md with a `longform:` block)"
+    end
+
+    lines = available.map do |path|
+      rel = path.sub("#{vault}/", '')
+      title = (Draft.new(path).title rescue rel)
+      format('    %-52s %s', rel, title)
+    end
+
+    raise Error, <<~MSG.chomp
+      #{available.length} drafts here and nothing to choose between them.
+
+      Pick one by:
+        cd-ing into the book's folder, or
+        compile.rb <path to its Index.md>, or
+        compile.rb --select <path to its Index.md>   (remembers it)
+
+      Available:
+      #{lines.join("\n")}
+    MSG
   end
 end
 

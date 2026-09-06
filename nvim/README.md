@@ -426,9 +426,35 @@ because nothing on disk changed, `git status` stays clean and it looks as
 though the compile did nothing. Set `M.autosave = false` in
 `lua/writing/compile.lua` if you'd rather it never wrote for you.
 
-**Which draft?** In order: an `Index.md` above the current file, then this
-tool's own `.compile-draft`, then Longform's remembered selection. So a vault
-with several books (A&A has five drafts) compiles the one you're editing.
+### Which draft gets compiled
+
+First match wins:
+
+1. **The nearest `Index.md` at or above the current file.** nvim runs the
+   compiler from the buffer's directory, so `<F9>` builds *the book you're
+   editing* — in a vault with five novels, the chapter under your cursor
+   settles it, with nothing to remember.
+2. **`<vault>/.compile-draft`** — set it with `compile.rb --select <Index.md>`.
+   Useful for building one book while reading another.
+3. **Longform's own selection**, read from its `data.json`. Choosing a draft in
+   Obsidian's dropdown steers the CLI too. Read-only: nvim's choice goes in
+   `.compile-draft` instead, since writing Longform's files while Obsidian is
+   open can be silently clobbered.
+4. **The only draft**, if the vault has exactly one.
+
+If none of those apply it **lists the drafts and stops** rather than guessing:
+
+```
+compile.rb: 5 drafts here and nothing to choose between them.
+
+Pick one by:
+  cd-ing into the book's folder, or
+  compile.rb <path to its Index.md>, or
+  compile.rb --select <path to its Index.md>   (remembers it)
+```
+
+`--list` marks the current selection with `*`; `--steps` names the draft on its
+first line. Both are cheap ways to confirm before building.
 
 **Configuration** goes in `Index.md` as a `compile:` key *sibling* to
 `longform:` -- never nested inside it, because Longform rebuilds that key
