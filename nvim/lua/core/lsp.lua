@@ -3,7 +3,7 @@
 -- Only harper-ls is configured here; obsidian.nvim starts its own obsidian-ls
 -- internally (see lua/plugins/obsidian.lua).
 --
--- harper-ls shares the SAME dictionary `zg` writes, <vault>/.writing/dictionary.utf-8.add,
+-- harper-ls shares the SAME dictionary `zg` writes, <vault>/.scriptorium/dictionary.utf-8.add,
 -- so a word added while writing is known to both the spell checker and the
 -- grammar checker. One list, versioned with the book.
 

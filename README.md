@@ -33,7 +33,7 @@ ln -s ~/Projects/dotfiles/vimrc ~/.vimrc
 mkdir -p ~/.vim
 ln -s ~/Projects/dotfiles/vim/colors ~/.vim/colors
 ln -s ~/Projects/dotfiles/vim/ftplugin ~/.vim/ftplugin
-ln -s ~/Projects/dotfiles/nvim ~/.config/nvim
+ln -s ~/Projects/dotfiles/nvim ~/.config/nvim   # Scriptorium (see nvim/README.md)
 ln -s ~/Projects/dotfiles/bin/compile.rb ~/.local/bin/compile.rb
 ln -s ~/Projects/dotfiles/zsh_aliases ~/.zsh_aliases
 ln -s ~/Projects/dotfiles/zshrc ~/.zshrc

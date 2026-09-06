@@ -4,7 +4,7 @@
 -- makes this per-vault for free: two buffers from different vaults can carry
 -- different sets at the same time, and switching vaults needs no teardown.
 --
--- Source file: <vault>/.writing/Abbreviations.md (see vault.support).
+-- Source file: <vault>/.scriptorium/Abbreviations.md (see vault.support).
 -- Accepts a markdown table, or plain `lhs = rhs` lines:
 --
 --   | Abbr | Expands to |

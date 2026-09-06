@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-# vault-init -- set up an Obsidian vault for the nvim writing environment.
+# vault-init -- set up an Obsidian vault for Scriptorium.
 #
 #   cd ~/Writing/some-vault && vault-init
 #   vault-init ~/Writing/some-vault
@@ -12,8 +12,8 @@
 #   .gitignore                    (missing lines appended, never overwritten)
 #   .vale.ini                     vale config, custom rules only
 #   .vale/Prose/*.yml             the prose rules
-#   .writing/Abbreviations.md     per-vault abbreviations, seeded empty
-#   .writing/dictionary.utf-8.add shared by vim's speller and harper-ls
+#   .scriptorium/Abbreviations.md      per-vault abbreviations, seeded empty
+#   .scriptorium/dictionary.utf-8.add  shared by vim's speller and harper-ls
 #
 # NON-DESTRUCTIVE. An existing file is never overwritten -- it's reported as
 # kept. .gitignore is the one exception and is only ever appended to. Safe to
@@ -109,6 +109,6 @@ unless options[:dry_run] || created.zero? && appended.zero?
   puts
   puts 'Next: commit the new files so they follow the vault to your other machines.'
   puts '  .vale/ and .vale.ini      the prose rules'
-  puts '  .writing/                 abbreviations and the shared dictionary'
+  puts '  .scriptorium/             abbreviations and the shared dictionary'
   puts '  .gitignore                keeps the generated .spl out'
 end

@@ -4,12 +4,11 @@
 
 local M = {}
 
---- Directory inside a vault for this tooling's own files -- abbreviations and
+--- Directory inside a vault for Scriptorium's own files -- abbreviations and
 --- the shared dictionary. Hidden, so it groups with .vale/ and
 --- .harper-ignored/ rather than competing with a vault's own note folders
---- (BBaS already has a "Metadata" directory, and "Meta" beside it was
---- needlessly confusing).
-M.support = ".writing"
+--- (BBaS already has a "Metadata" directory; "Meta" beside it was confusing).
+M.support = ".scriptorium"
 
 --- Path to one of this tooling's files in the current vault.
 function M.support_path(name, bufnr)
