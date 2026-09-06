@@ -146,13 +146,30 @@ end
 
 --- Ignore the harper suggestion under the cursor, via harper's own code
 --- action -- the same "Ignore Harper error" you'd get from <Leader>a.
+---
+--- Note this silences harper only. An unknown word is underlined by TWO
+--- independent things -- harper's diagnostic and vim's own spell checker --
+--- so a proper noun wants `zg`, which teaches both, rather than this.
 function M.ignore()
+  local word = vim.fn.expand("<cword>")
+
   vim.lsp.buf.code_action({
     filter = function(a)
       return a.title and a.title:lower():find("ignore") ~= nil
     end,
     apply = true,
   })
+
+  -- If the word is also unknown to vim's spell checker, the underline stays
+  -- after this and looks like the ignore failed. Say so.
+  vim.defer_fn(function()
+    if word ~= "" and vim.wo.spell and vim.fn.spellbadword(word)[2] ~= "" then
+      vim.notify(
+        string.format("Harper ignored, but '%s' is still flagged by spell check - use zg to add it", word),
+        vim.log.levels.WARN
+      )
+    end
+  end, 800)
   -- Mirror it into the vault straight away, so it survives even if nvim is
   -- killed rather than exited.
   vim.defer_fn(function()

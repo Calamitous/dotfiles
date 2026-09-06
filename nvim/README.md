@@ -252,6 +252,17 @@ not errors, with no virtual text.
 appears beneath it automatically -- only that line, so the page isn't littered.
 `<Leader>d` opens the full detail in a float; `<Leader>a` offers the fix.
 
+**Which one to reach for.** An unknown word is underlined by *two* independent
+things — harper's diagnostic and vim's own spell checker — so:
+
+| Situation | Use | Why |
+|---|---|---|
+| a name or invented word (*Shazedah*, *sanat-magi*) | **`zg`** | teaches **both**; the underline goes away entirely |
+| a grammar or style suggestion you disagree with | `<Leader>x` | silences harper only |
+
+`<Leader>x` on a *spelling* flag leaves the spell underline in place and looks
+like it didn't work. It now says so when that happens.
+
 **`zg` takes effect immediately.** Harper caches its dictionary, so a word added
 while writing used to stay flagged until nvim restarted. `zg`, `zw` and friends
 now push a `didChangeConfiguration` at harper so it re-reads. One keystroke
