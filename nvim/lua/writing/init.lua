@@ -20,6 +20,27 @@ function M.setup()
   require("writing.vale").setup()
   require("writing.harper_sync").setup()
 
+  -- One switch for every checker, for a single key like <F3>.
+  -- If either is on, both go off; otherwise both come on -- so they can't
+  -- drift out of step.
+  vim.api.nvim_create_user_command("Checks", function()
+    local prose = require("writing.prose")
+    local lsp = require("core.lsp")
+
+    local harper_on = lsp.on
+    if harper_on == nil then
+      harper_on = lsp.enabled_by_default
+    end
+    local spell_on = vim.wo.spell
+    local turning_on = not (harper_on or spell_on)
+
+    prose.set_spell(turning_on)
+    pcall(function()
+      lsp.enable(turning_on)
+    end)
+    vim.notify("Checks " .. (turning_on and "on" or "off") .. " (spell + harper)")
+  end, { desc = "Toggle spell check and grammar together" })
+
   vim.api.nvim_create_user_command("WritingHelp", function()
     local rows = {
       { "", "NAVIGATION" },
@@ -43,7 +64,8 @@ function M.setup()
       { "<Leader>wp", ":WP         prose mode (wrap, spell, gj/gk)" },
       { "<Leader>y", ":CopyHTML   copy buffer/selection as rich text" },
       { "<Leader>s", "z=          spelling suggestions" },
-      { "<Leader>S", "            toggle spell check on/off" },
+      { "<Leader>S", ":Spell      toggle spell check" },
+      { "<Leader>H", ":Checks     toggle spell AND grammar together" },
       { "]s / [s", "         next / prev misspelling" },
       { "<Leader>l", ":CheckboxToggle  check/uncheck (or add) a checkbox" },
       { "zg", "            add word to this vault's dictionary" },

@@ -43,10 +43,8 @@ map("v", "<F10>",     ":CopyHTML<CR>",     { desc = "Copy selection as HTML" })
 
 -- Spelling
 map("n", "<Leader>s", "z=", { desc = "Spelling suggestions" })
-map("n", "<Leader>S", function()
-  vim.wo.spell = not vim.wo.spell
-  vim.notify("Spell check " .. (vim.wo.spell and "on" or "off"))
-end, { desc = "Toggle spell check" })
+map("n", "<Leader>S", "<Cmd>Spell<CR>", { desc = "Toggle spell check" })
+map("n", "<Leader>H", "<Cmd>Checks<CR>", { desc = "Toggle spell + grammar" })
 
 -- Wikilinks (obsidian.nvim). These need a markdown buffer in a vault -- the
 -- plugin loads on `ft = "markdown"`.
@@ -98,7 +96,7 @@ map("n", "[d", function() vim.diagnostic.jump({ count = -1 }) end, { desc = "Pre
 map("n", "<Leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 map("n", "<Leader>a", vim.lsp.buf.code_action, { desc = "Code action (accept fix)" })
 
-map("n", "<F3>", "<Cmd>Harper<CR>", { desc = "Toggle grammar checking" })
+map("n", "<F3>", "<Cmd>Checks<CR>", { desc = "Toggle spell + grammar" })
 map("n", "<Leader>h", "<Cmd>Harper<CR>", { desc = "Toggle grammar checking" })
 map("n", "<Leader>x", "<Cmd>HarperIgnore<CR>", { desc = "Ignore this suggestion" })
 

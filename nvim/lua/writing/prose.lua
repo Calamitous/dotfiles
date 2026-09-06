@@ -114,6 +114,18 @@ function M.toggle(bufnr)
   end
 end
 
+--- Toggle vim's spell check for this window.
+function M.toggle_spell()
+  vim.wo.spell = not vim.wo.spell
+  vim.notify("Spell check " .. (vim.wo.spell and "on" or "off"))
+  return vim.wo.spell
+end
+
+--- Set it explicitly, for callers coordinating several checkers.
+function M.set_spell(on)
+  vim.wo.spell = on
+end
+
 function M.setup()
   local vault = require("writing.vault")
 
@@ -130,6 +142,7 @@ function M.setup()
 
   vim.api.nvim_create_user_command("WP", function() M.toggle() end, { desc = "Toggle prose mode" })
   vim.api.nvim_create_user_command("ProseMode", function() M.toggle() end, { desc = "Toggle prose mode" })
+  vim.api.nvim_create_user_command("Spell", function() M.toggle_spell() end, { desc = "Toggle spell check" })
 end
 
 return M

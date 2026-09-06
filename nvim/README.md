@@ -165,16 +165,20 @@ own dictionary at `<vault>/Meta/dictionary.utf-8.add`:
 | `zw` | mark the word under the cursor as wrong |
 | `z=` | suggestions (also `<Leader>s`) |
 | `]s` / `[s` | next / previous misspelling |
-| `<Leader>S` | turn spell check on/off |
+| `<Leader>S` | turn spell check on/off (`:Spell`) |
 
 Two independent checkers, two sets of keys — worth keeping straight:
 
 | | spell check | harper (grammar) |
 |---|---|---|
 | jump | `]s` / `[s` | `]d` / `[d` |
-| toggle | `<Leader>S` | `<Leader>h` |
+| toggle | `<Leader>S` / `:Spell` | `<Leader>h` / `:Harper` |
 | accept the word | `zg` | `zg` (same list) |
 | dismiss one | — | `<Leader>x` |
+
+**`:Checks` toggles both at once** (`<Leader>H`, and `<F3>`). It doesn't flip
+them independently: if either is on, both go off; if both are off, both come
+on — so they can't drift out of step.
 
 The dictionary lives in the vault, so invented vocabulary travels with the book
 in its own git repo -- the same arrangement as `Meta/Abbreviations.md`.
