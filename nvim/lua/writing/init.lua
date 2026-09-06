@@ -18,6 +18,7 @@ function M.setup()
   require("writing.checkbox").setup()
   require("writing.compile").setup()
   require("writing.vale").setup()
+  require("writing.harper_sync").setup()
 
   vim.api.nvim_create_user_command("WritingHelp", function()
     local rows = {
@@ -61,6 +62,7 @@ function M.setup()
       { "<Leader>d", "        why is this flagged?" },
       { "<Leader>x", "        ignore this suggestion" },
       { "zg", "               add word to vault dictionary" },
+      { "", ":HarperSync    push/pull ignores with the vault" },
       { "<Leader>a", "        accept a harper fix" },
       { "", "" },
       { "", "COUNTS" },

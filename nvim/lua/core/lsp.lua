@@ -153,6 +153,13 @@ function M.ignore()
     end,
     apply = true,
   })
+  -- Mirror it into the vault straight away, so it survives even if nvim is
+  -- killed rather than exited.
+  vim.defer_fn(function()
+    pcall(function()
+      require("writing.harper_sync").export()
+    end)
+  end, 1500)
 end
 
 --- Add the word under the cursor to this vault's dictionary, teaching both

@@ -257,12 +257,20 @@ while writing used to stay flagged until nvim restarted. `zg`, `zw` and friends
 now push a `didChangeConfiguration` at harper so it re-reads. One keystroke
 teaches the spell checker and the grammar checker together.
 
-**Where the two "ignore" lists differ.** Vale's dismissals live in
-`<vault>/.vale-dismissed` — versioned with the book, shared across machines.
-Harper's live in `~/.local/share/harper-ls/ignored_lints/`, keyed by **absolute
-path**, so they are machine-local and don't follow the vault to another
-computer. Nothing to fix, but worth knowing before you invest an evening in
-dismissing things.
+**Both ignore lists travel with the vault.** Vale's dismissals live in
+`<vault>/.vale-dismissed`. Harper's own store is machine-local and keyed by
+absolute path (`~/.local/share/harper-ls/ignored_lints/`), so it's mirrored
+into `<vault>/.harper-ignored/` under vault-relative names: exported when you
+ignore something and on exit, imported the first time you open a markdown file
+in that vault. Commit both directories and your decisions follow you between
+machines.
+
+`:HarperSync` forces a round trip if you want it immediately.
+
+This works because the files hold *content hashes* rather than positions, so
+only the filename needed rewriting. One trap if you ever touch this code: the
+hashes are u64 and must never pass through `vim.json.decode`, which turns them
+into floats and silently destroys the match.
 
 **Drafting vs revising.** `<Leader>h` (`:Harper`) silences it without stopping
 the server, so nothing is recomputed when you turn it back on. To start every
