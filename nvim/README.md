@@ -5,7 +5,9 @@ Code editing stays in **vim** (`../vimrc`); nothing here touches that setup.
 
 Install: `ln -s ~/Projects/dotfiles/nvim ~/.config/nvim`
 
-Press `<Leader>?` (`:WritingHelp`) inside nvim for this list. Leader is **space**.
+Press `<Leader>?` (`:WritingHelp`) inside nvim for this list — it opens in a
+scrollable float, two columns where the terminal is wide enough, one where it
+isn't. `q` closes it. Leader is **space**.
 
 ## Keymaps
 

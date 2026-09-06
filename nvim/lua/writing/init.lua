@@ -19,6 +19,7 @@ function M.setup()
   require("writing.compile").setup()
   require("writing.vale").setup()
   require("writing.harper_sync").setup()
+  require("writing.help").setup()
 
   -- One switch for every checker, for a single key like <F3>.
   -- If either is on, both go off; otherwise both come on -- so they can't
@@ -40,82 +41,6 @@ function M.setup()
     end)
     vim.notify("Checks " .. (turning_on and "on" or "off") .. " (spell + harper)")
   end, { desc = "Toggle spell check and grammar together" })
-
-  vim.api.nvim_create_user_command("WritingHelp", function()
-    local rows = {
-      { "", "NAVIGATION" },
-      { "<Leader>o", ":Files      fuzzy-find files in the vault" },
-      { "<Leader>/", ":Grep       live-grep the vault contents" },
-      { "<Leader>b", ":Buffers    switch buffer" },
-      { "<Leader>e", ":Sidebar    file navigator (E = vault root)" },
-      { "<Leader>,", ":Config     open this nvim config" },
-      { "<Leader>r", ":Reload     reload the config in place" },
-      { "", "" },
-      { "", "LINKS" },
-      { "<Leader>kr", ":Obsidian rename  rename + rewrite all links" },
-      { "<Leader>kf", ":Obsidian follow_link" },
-      { "<Leader>kb", ":Obsidian backlinks" },
-      { "<Leader>ks", ":Obsidian quick_switch" },
-      { "<Leader>kg", ":Obsidian search    grep across notes" },
-      { "<Leader>kl", ":Obsidian links     links in this note" },
-      { "", "" },
-      { "", "WRITING" },
-      { "<Leader>wr", ":Reading    centred fixed-width reading mode" },
-      { "<Leader>wp", ":WP         prose mode (wrap, spell, gj/gk)" },
-      { "<Leader>y", ":CopyHTML   copy buffer/selection as rich text" },
-      { "<Leader>s", "z=          spelling suggestions" },
-      { "<Leader>S", ":Spell      toggle spell check" },
-      { "<Leader>H", ":Checks     toggle spell AND grammar together" },
-      { "]s / [s", "         next / prev misspelling" },
-      { "<Leader>l", ":CheckboxToggle  check/uncheck (or add) a checkbox" },
-      { "zg", "            add word to this vault's dictionary" },
-      { "]s / [s", "      next / previous misspelling" },
-      { "", "" },
-      { "", "MANUSCRIPT" },
-      { "<Leader>mc", ":Compile        build the manuscript" },
-      { "<Leader>mk", ":CompileCheck   build without writing; show the diff" },
-      { "<Leader>ml", ":CompileList    drafts in this vault" },
-      { "", "" },
-      { "", "PROSE LINT" },
-      { "<Leader>vv", ":Vale       lint this file" },
-      { "<Leader>vd", ":ValeDraft  lint the whole draft" },
-      { "x", "             (in quickfix) won\'t do -- dismiss it" },
-      { "]q / [q", "       next / prev quickfix entry" },
-      { "<Leader>h", "        toggle grammar checking on/off" },
-      { "]d / [d", "         next / prev harper suggestion" },
-      { "<Leader>d", "        why is this flagged?" },
-      { "<Leader>x", "        ignore this suggestion" },
-      { "zg", "               add word to vault dictionary" },
-      { "", ":HarperSync    push/pull ignores with the vault" },
-      { "<Leader>a", "        accept a harper fix" },
-      { "", "" },
-      { "", "COUNTS" },
-      { "<Leader>wc", ":WordCount       this buffer" },
-      { "<Leader>wd", ":WordCountDraft  the whole draft, by scene" },
-      { "<Leader>wD", ":WordCountDir    a directory, per file" },
-      { "", "" },
-      { "", "VAULT" },
-      { "<Leader>wv", ":VaultInfo     which vault/draft this buffer is in" },
-      { "<Leader>wa", ":AbbrevEdit    edit this vault's abbreviations" },
-      { "<Leader>wA", ":AbbrevReload  reload them after editing" },
-      { "", "" },
-      { "", "APPEARANCE" },
-      { "", ":Italics       toggle real italics vs colour-only" },
-    }
-
-    local out = {}
-    for _, row in ipairs(rows) do
-      if row[1] == "" and row[2] == "" then
-        table.insert(out, { "\n" })
-      elseif row[1] == "" then
-        table.insert(out, { row[2] .. "\n", "Title" })
-      else
-        table.insert(out, { string.format("  %-12s ", row[1]), "Identifier" })
-        table.insert(out, { row[2] .. "\n" })
-      end
-    end
-    vim.api.nvim_echo(out, false, {})
-  end, { desc = "Show writing commands and keymaps" })
 
   vim.api.nvim_create_user_command("VaultInfo", function()
     local root = M.vault.root()
