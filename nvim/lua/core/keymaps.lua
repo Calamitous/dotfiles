@@ -93,7 +93,10 @@ map("n", "]d", function() vim.diagnostic.jump({ count = 1 }) end, { desc = "Next
 map("n", "[d", function() vim.diagnostic.jump({ count = -1 }) end, { desc = "Previous diagnostic" })
 map("n", "<Leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 map("n", "<Leader>a", vim.lsp.buf.code_action, { desc = "Code action (accept fix)" })
+
+map("n", "<F3>", "<Cmd>Harper<CR>", { desc = "Toggle grammar checking" })
 map("n", "<Leader>h", "<Cmd>Harper<CR>", { desc = "Toggle grammar checking" })
+map("n", "<Leader>x", "<Cmd>HarperIgnore<CR>", { desc = "Ignore this suggestion" })
 
 -- Prose linting (Vale)
 map("n", "<Leader>vv", "<Cmd>Vale<CR>", { desc = "Lint this file" })

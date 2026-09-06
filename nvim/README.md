@@ -245,10 +245,24 @@ not errors, with no virtual text.
 | `]d` / `[d` | next / previous suggestion |
 | `<Leader>d` | full detail for the one under the cursor |
 | `<Leader>a` | accept a fix (code action) |
+| `<Leader>x` | **ignore this one** — leaves the prose alone |
+| `zg` | add the word to this vault's dictionary |
 
 **Why is this word underlined?** The message for the line your cursor is on
 appears beneath it automatically -- only that line, so the page isn't littered.
 `<Leader>d` opens the full detail in a float; `<Leader>a` offers the fix.
+
+**`zg` takes effect immediately.** Harper caches its dictionary, so a word added
+while writing used to stay flagged until nvim restarted. `zg`, `zw` and friends
+now push a `didChangeConfiguration` at harper so it re-reads. One keystroke
+teaches the spell checker and the grammar checker together.
+
+**Where the two "ignore" lists differ.** Vale's dismissals live in
+`<vault>/.vale-dismissed` — versioned with the book, shared across machines.
+Harper's live in `~/.local/share/harper-ls/ignored_lints/`, keyed by **absolute
+path**, so they are machine-local and don't follow the vault to another
+computer. Nothing to fix, but worth knowing before you invest an evening in
+dismissing things.
 
 **Drafting vs revising.** `<Leader>h` (`:Harper`) silences it without stopping
 the server, so nothing is recomputed when you turn it back on. To start every

@@ -59,6 +59,8 @@ function M.setup()
       { "<Leader>h", "        toggle grammar checking on/off" },
       { "]d / [d", "         next / prev harper suggestion" },
       { "<Leader>d", "        why is this flagged?" },
+      { "<Leader>x", "        ignore this suggestion" },
+      { "zg", "               add word to vault dictionary" },
       { "<Leader>a", "        accept a harper fix" },
       { "", "" },
       { "", "COUNTS" },

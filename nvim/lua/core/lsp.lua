@@ -41,6 +41,17 @@ function M.setup()
     M.toggle()
   end, { desc = "Toggle harper grammar checking" })
 
+  vim.api.nvim_create_user_command("HarperIgnore", M.ignore, { desc = "Ignore the suggestion under the cursor" })
+  vim.api.nvim_create_user_command("HarperRefresh", M.refresh, { desc = "Make harper re-read the dictionary" })
+
+  -- Spell-list changes must be pushed to harper, which caches the file.
+  for _, key in ipairs({ "zg", "zG", "zw", "zW", "zug", "zuw" }) do
+    vim.keymap.set("n", key, function()
+      vim.cmd("normal! " .. key)
+      M.refresh()
+    end, { desc = "Spell list (refreshes Harper)" })
+  end
+
   vim.lsp.config("harper_ls", {
     cmd = { "harper-ls", "--stdio" },
     filetypes = { "markdown", "text" },
@@ -120,6 +131,36 @@ function M.enable(on)
     vim.diagnostic.enable(on, { ns_id = id })
   end
   M.on = on
+end
+
+--- Tell harper to re-read its dictionary.
+---
+--- `zg` writes to the spellfile, which is also harper's userDictPath -- but
+--- harper caches it, so a word added while writing stayed flagged until nvim
+--- was restarted. A didChangeConfiguration notification makes it re-read.
+function M.refresh()
+  for _, client in ipairs(vim.lsp.get_clients({ name = "harper_ls" })) do
+    client:notify("workspace/didChangeConfiguration", { settings = client.settings })
+  end
+end
+
+--- Ignore the harper suggestion under the cursor, via harper's own code
+--- action -- the same "Ignore Harper error" you'd get from <Leader>a.
+function M.ignore()
+  vim.lsp.buf.code_action({
+    filter = function(a)
+      return a.title and a.title:lower():find("ignore") ~= nil
+    end,
+    apply = true,
+  })
+end
+
+--- Add the word under the cursor to this vault's dictionary, teaching both
+--- vim's spell checker and harper in one keystroke.
+function M.add_word()
+  vim.cmd("normal! zg")
+  M.refresh()
+  vim.notify("Added to " .. vim.fs.basename(vim.bo.spellfile ~= "" and vim.bo.spellfile or "dictionary"))
 end
 
 function M.toggle()
