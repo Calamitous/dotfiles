@@ -43,6 +43,8 @@ function M.setup()
       { "<Leader>wp", ":WP         prose mode (wrap, spell, gj/gk)" },
       { "<Leader>y", ":CopyHTML   copy buffer/selection as rich text" },
       { "<Leader>s", "z=          spelling suggestions" },
+      { "<Leader>S", "            toggle spell check on/off" },
+      { "]s / [s", "         next / prev misspelling" },
       { "<Leader>l", ":CheckboxToggle  check/uncheck (or add) a checkbox" },
       { "zg", "            add word to this vault's dictionary" },
       { "]s / [s", "      next / previous misspelling" },

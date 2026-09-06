@@ -43,6 +43,10 @@ map("v", "<F10>",     ":CopyHTML<CR>",     { desc = "Copy selection as HTML" })
 
 -- Spelling
 map("n", "<Leader>s", "z=", { desc = "Spelling suggestions" })
+map("n", "<Leader>S", function()
+  vim.wo.spell = not vim.wo.spell
+  vim.notify("Spell check " .. (vim.wo.spell and "on" or "off"))
+end, { desc = "Toggle spell check" })
 
 -- Wikilinks (obsidian.nvim). These need a markdown buffer in a vault -- the
 -- plugin loads on `ft = "markdown"`.
