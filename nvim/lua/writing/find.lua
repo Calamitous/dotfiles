@@ -25,6 +25,16 @@ local function rg_cmd()
     .. (M.ignore_case and "--ignore-case" or "--smart-case")
 end
 
+--- How the search term is marked in the grep preview, as an ANSI SGR list.
+--- A background reads far better than the default bold red, which is thin and
+--- easy to lose in a wall of prose.
+---
+---   "1;30;43"  bold black on yellow   (default)
+---   "1;37;44"  bold white on blue
+---   "30;46"    black on cyan
+---   "1;31"     grep's own bold red
+M.match_highlight = "1;30;43"
+
 --- fzf's own matcher: -i forces case-insensitive, +i forces case-sensitive.
 local function fzf_case()
   return M.ignore_case and "-i" or "+i"
@@ -141,21 +151,33 @@ function M.files(dir)
   run(cmd, cwd, vim.fs.basename(cwd) .. " — files", on_files)
 end
 
---- Live-grep the vault contents. <Leader>/
-function M.grep(dir)
-  local cwd = dir or root()
-  local cmd = table.concat({
+--- The fzf invocation for the grep picker. Split out so the flags can be
+--- asserted in a spec -- the picker itself is interactive and can't be.
+function M.grep_command()
+  return table.concat({
     "fzf --ansi --disabled --multi --exit-0 " .. fzf_case(),
     "--expect=" .. EXPECT,
     "--prompt='Grep> '",
     "--delimiter=:",
     "--bind 'start:reload:" .. rg_cmd() .. " -- {q} || true'",
     "--bind 'change:reload:" .. rg_cmd() .. " -- {q} || true'",
-    "--preview 'head -n {2} {1} | tail -n 25'",
-    "--preview-window=right:55%:wrap",
+    -- Highlight the search term in the preview. `-e {q} -e '$'` is the trick:
+    -- the second pattern matches every line, so nothing is filtered out, while
+    -- the first still gets coloured.
+    -- GREP_COLORS mt= sets the match colour. Double-quoted so the semicolons
+    -- aren't read as shell command separators.
+    "--preview 'GREP_COLORS=\"mt=" .. M.match_highlight .. "\" "
+      .. "grep --color=always -i -E -e {q} -e \"$\" -- {1}'",
+    -- Show the whole file, scrolled so the hit sits in the middle rather than
+    -- at the bottom edge.
+    "--preview-window=right:55%:wrap:+{2}-/2",
   }, " ")
+end
 
-  run(cmd, cwd, vim.fs.basename(cwd) .. " — grep", on_grep)
+--- Live-grep the vault contents. <Leader>/
+function M.grep(dir)
+  local cwd = dir or root()
+  run(M.grep_command(), cwd, vim.fs.basename(cwd) .. " — grep", on_grep)
 end
 
 --- Fuzzy-find within this nvim config. <Leader>,
@@ -164,6 +186,39 @@ end
 function M.config()
   local dir = vim.fn.stdpath("config")
   M.files(vim.uv.fs_realpath(dir) or dir)
+end
+
+--- Walk the jumplist until the FILE changes.
+---
+--- Plain <C-o> steps through every jump, including searches and motions inside
+--- the file you're already in, so getting back to the previous file can take a
+--- dozen presses.
+--- @param direction integer  -1 back, 1 forward
+function M.jump_file(direction)
+  local start = vim.api.nvim_buf_get_name(0)
+  local key = vim.api.nvim_replace_termcodes(direction < 0 and "<C-o>" or "<C-i>", true, false, true)
+
+  for _ = 1, 100 do
+    local buf = vim.api.nvim_get_current_buf()
+    local pos = vim.api.nvim_win_get_cursor(0)
+
+    vim.cmd("normal! " .. key)
+
+    -- Stop when the POSITION stops moving -- the end of the jumplist. Watching
+    -- the buffer instead would stop at the first same-file jump, which is
+    -- precisely what this is meant to step over.
+    if vim.api.nvim_get_current_buf() == buf then
+      local now = vim.api.nvim_win_get_cursor(0)
+      if now[1] == pos[1] and now[2] == pos[2] then
+        break
+      end
+    end
+
+    if vim.api.nvim_buf_get_name(0) ~= start then
+      return true
+    end
+  end
+  return false
 end
 
 --- Fuzzy-find among open buffers.

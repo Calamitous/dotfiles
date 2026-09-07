@@ -37,6 +37,7 @@ M.palette = {
   heading = "#81a2be",
   heading_alt = "#8abeb7", -- deeper heading levels
   raw = "#b5bd68", -- `code`
+  comment = "#6c6f7a", -- %%notes to self%%
   spell_bad = "#cc6666",
   spell_cap = "#e0b070",
   spell_rare = "#82b8c8",
@@ -100,6 +101,9 @@ function M.apply()
   hl("SpellCap", spell(p.spell_cap))
   hl("SpellRare", spell(p.spell_rare))
   hl("SpellLocal", spell(p.spell_local))
+
+  -- Notes to self. Dim and italic: present, but not competing with the prose.
+  hl("ScriptoriumComment", { fg = p.comment, italic = M.italics })
 
   -- Concealed markers (the `_` and `**` themselves) shouldn't draw the eye.
   hl("Conceal", { fg = p.quote })

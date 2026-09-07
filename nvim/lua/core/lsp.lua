@@ -11,9 +11,9 @@ local M = {}
 
 M.dictionary = require("writing.vault").support .. "/dictionary.utf-8.add"
 
---- Start with grammar checking on? Set false to draft undisturbed and turn it
---- on when you revise; `:Harper` toggles it either way.
-M.enabled_by_default = true
+--- Start with grammar checking on? Off by default: drafting is undisturbed,
+--- and `:Harper` / `<F3>` turns it on for a revision pass.
+M.enabled_by_default = false
 
 --- Linters tuned for fiction rather than documentation. Prose breaks several
 --- of harper's defaults on purpose: dialogue is full of fragments, and
@@ -80,6 +80,16 @@ function M.setup()
         return
       end
 
+      -- Apply the startup default HERE, not in setup(). harper-ls takes
+      -- seconds to attach, so anything scheduled at startup runs while
+      -- there is no client and no diagnostic namespace -- it would warn
+      -- and silently do nothing. `M.on == nil` = nothing has toggled yet.
+      if M.on == nil then
+        vim.schedule(function()
+          M.enable(M.enabled_by_default, true)
+        end)
+      end
+
       local path = client.root_dir .. "/" .. M.dictionary
       if vim.tbl_get(client.settings, "harper-ls", "userDictPath") == path then
         return
@@ -104,11 +114,6 @@ function M.setup()
     float = { border = "rounded", source = true },
   })
 
-  if not M.enabled_by_default then
-    vim.schedule(function()
-      M.enable(false)
-    end)
-  end
 end
 
 --- Harper's diagnostic namespaces (one per client).
@@ -121,16 +126,20 @@ local function namespaces()
 end
 
 --- Turn harper's diagnostics on or off, leaving every other source alone.
-function M.enable(on)
+--- @param quiet boolean|nil  don't complain if no client has attached yet
+function M.enable(on, quiet)
   local ns = namespaces()
   if #ns == 0 then
-    vim.notify("harper-ls isn't running here", vim.log.levels.WARN)
-    return
+    if not quiet then
+      vim.notify("harper-ls isn't running here", vim.log.levels.WARN)
+    end
+    return false
   end
   for _, id in ipairs(ns) do
     vim.diagnostic.enable(on, { ns_id = id })
   end
   M.on = on
+  return true
 end
 
 --- Tell harper to re-read its dictionary.
@@ -189,10 +198,11 @@ end
 
 function M.toggle()
   if M.on == nil then
-    M.on = true
+    M.on = M.enabled_by_default
   end
-  M.enable(not M.on)
-  vim.notify("Harper " .. (M.on and "on" or "off"))
+  if M.enable(not M.on) then
+    vim.notify("Harper " .. (M.on and "on" or "off"))
+  end
 end
 
 return M

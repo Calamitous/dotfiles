@@ -1,0 +1,63 @@
+#!/bin/sh
+# scriptorium -- one entry point for the writing tools.
+#
+#   scriptorium init [path]     set a vault up (rules, dictionary, .gitignore)
+#   scriptorium compile         build the manuscript
+#   scriptorium check           build without writing; diff against the current
+#   scriptorium steps           show the compile pipeline and every step
+#   scriptorium drafts          list the drafts in this vault
+#   scriptorium select <Index>  remember which draft to build
+#   scriptorium docx            build, and render a .docx via pandoc
+#
+# The individual scripts (vault-init, compile.rb) still work directly; this is
+# just a front door so there's one name to remember.
+
+set -e
+
+# Resolve through the symlink in ~/.local/bin to find the sibling scripts.
+# Written the long way because macOS `readlink` has no -f.
+src=$0
+while [ -L "$src" ]; do
+  dir=$(cd -P "$(dirname "$src")" && pwd)
+  src=$(readlink "$src")
+  case $src in
+    /*) ;;
+    *) src=$dir/$src ;;
+  esac
+done
+BIN=$(cd -P "$(dirname "$src")" && pwd)
+
+usage() {
+  sed -n '3,14p' "$src" | sed 's/^# \{0,1\}//'
+  exit "${1:-0}"
+}
+
+compile() {
+  if [ ! -f "$BIN/compile.rb" ]; then
+    echo "scriptorium: compile.rb not found beside $0" >&2
+    exit 1
+  fi
+  exec ruby "$BIN/compile.rb" "$@"
+}
+
+cmd=${1:-}
+[ $# -gt 0 ] && shift
+
+case "$cmd" in
+  init)
+    [ -x "$BIN/vault-init" ] || { echo "scriptorium: vault-init not found" >&2; exit 1; }
+    exec "$BIN/vault-init" "$@"
+    ;;
+  compile|build) compile "$@" ;;
+  check)         compile --check "$@" ;;
+  steps)         compile --steps "$@" ;;
+  drafts|list)   compile --list "$@" ;;
+  select)        compile --select "$@" ;;
+  docx)          compile --docx "$@" ;;
+  ""|help|-h|--help) usage 0 ;;
+  *)
+    echo "scriptorium: unknown command '$cmd'" >&2
+    echo >&2
+    usage 1 >&2
+    ;;
+esac

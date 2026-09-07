@@ -49,6 +49,15 @@ return {
     return {
       workspaces = workspaces(),
       legacy_commands = false,
+      -- Two separate options, easily confused: `footer` is the greyed virtual
+      -- text drawn at the end of the file ("N backlinks  N properties  N
+      -- words  N chars"); `statusline` only populates b:obsidian_status for a
+      -- statusline to use. Both off -- the word count lives in a real
+      -- statusline instead (lua/writing/statusline.lua), using the same count
+      -- as :WordCount and the compiler, and backlinks, properties and
+      -- character counts aren't wanted at all.
+      footer = { enabled = false },
+      statusline = { enabled = false },
       frontmatter = { enabled = false },
       ui = { enable = false },
       -- Human-readable filenames; these are chapters, not zettels.

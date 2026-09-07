@@ -21,6 +21,12 @@ M.thesaurus = vim.fn.expand("~/.vim/thesaurus/mthesaur.txt")
 --- the same arrangement as the abbreviations file beside it.
 M.spellfile = "dictionary.utf-8.add"
 
+--- Start with spell check on? Kept in step with grammar
+--- (`core.lsp.enabled_by_default`) so a fresh session isn't half-marked: with
+--- spell on and harper off, the underlines that remain look like harper having
+--- only partly started.
+M.spell_on_start = false
+
 --- Point 'spellfile' at this vault's dictionary, creating the folder if needed.
 local function set_spellfile(bufnr)
   local path = vault.support_path(M.spellfile, bufnr)
@@ -43,7 +49,7 @@ local function set_local_options()
   vim.opt_local.number = false
   vim.opt_local.relativenumber = false
   vim.opt_local.list = false
-  vim.opt_local.spell = true
+  vim.opt_local.spell = M.spell_on_start
   vim.opt_local.spelllang = "en_us"
   set_spellfile()
   vim.opt_local.expandtab = true
@@ -72,8 +78,13 @@ local function set_local_maps(bufnr)
 
   -- Undo breakpoints at sentence boundaries, so `u` rewinds a sentence at a
   -- time rather than an entire paragraph.
+  --
+  -- The leading <C-]> matters: mapping these characters otherwise SWALLOWS
+  -- abbreviation expansion, because vim expands on an unmapped non-keyword
+  -- character. Without it `f.` stayed `f.` while `f"` expanded, which looks
+  -- like abbreviations randomly not working. <C-]> expands explicitly first.
   for _, ch in ipairs({ ".", "!", "?", ":", "," }) do
-    vim.keymap.set("i", ch, ch .. "<C-g>u", opts)
+    vim.keymap.set("i", ch, "<C-]>" .. ch .. "<C-g>u", opts)
   end
 end
 

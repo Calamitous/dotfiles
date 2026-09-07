@@ -1,0 +1,40 @@
+#!/bin/sh
+# Scriptorium test suite.  Optionally filter:  tests/run reading
+#
+# One neovim per spec file: state set by one spec (filetype detection, window
+# layout, module state) can't leak into the next, and a crash takes down only
+# its own file.
+
+HERE=$(cd -P "$(dirname "$0")" && pwd)
+filter=${1:-}
+counts=$(mktemp)
+total=0; failed=0; skipped=0; crashed=0
+
+for spec in "$HERE"/specs/*_spec.lua; do
+  name=$(basename "$spec" _spec.lua)
+  case "$name" in
+    *"$filter"*) ;;
+    *) continue ;;
+  esac
+
+  if ! nvim -l "$HERE/run.lua" "$spec" "$counts"; then
+    [ -s "$counts" ] || { printf '\033[31m  CRASH\033[0m %s\n' "$name"; crashed=$((crashed + 1)); }
+  fi
+
+  if [ -s "$counts" ]; then
+    read -r t f s < "$counts"
+    total=$((total + t)); failed=$((failed + f)); skipped=$((skipped + s))
+    : > "$counts"
+  fi
+done
+
+rm -f "$counts"
+passed=$((total - failed - skipped))
+
+printf '\n\033[32m%d passed\033[0m, ' "$passed"
+if [ "$failed" -gt 0 ]; then printf '\033[31m%d failed\033[0m, ' "$failed"; else printf '%d failed, ' "$failed"; fi
+printf '%d skipped  (%d total)' "$skipped" "$total"
+[ "$crashed" -gt 0 ] && printf '  \033[31m%d spec file(s) crashed\033[0m' "$crashed"
+printf '\n'
+
+[ "$failed" -eq 0 ] && [ "$crashed" -eq 0 ]

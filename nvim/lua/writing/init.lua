@@ -20,6 +20,11 @@ function M.setup()
   require("writing.vale").setup()
   require("writing.harper_sync").setup()
   require("writing.help").setup()
+  require("writing.comments").setup()
+  require("writing.scene").setup()
+  require("writing.session").setup()
+  require("writing.bookmarks").setup()
+  require("writing.statusline").setup()
 
   -- One switch for every checker, for a single key like <F3>.
   -- If either is on, both go off; otherwise both come on -- so they can't

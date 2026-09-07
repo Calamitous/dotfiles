@@ -1,17 +1,18 @@
--- Per-vault abbreviations.
+-- Per-vault abbreviations, written as ordinary vim commands.
 --
--- Abbreviations are installed BUFFER-LOCALLY (`iabbrev <buffer>`), which is what
--- makes this per-vault for free: two buffers from different vaults can carry
--- different sets at the same time, and switching vaults needs no teardown.
+--   <vault>/.scriptorium/abbreviations.vim
 --
--- Source file: <vault>/.scriptorium/Abbreviations.md (see vault.support).
--- Accepts a markdown table, or plain `lhs = rhs` lines:
+--     iabbrev bsh Bayze Shab
+--     iabbrev nmr Namarûn
 --
---   | Abbr | Expands to |
---   |------|------------|
---   | dk   | D'khara    |
+-- Real vimscript, so `:help abbreviations` applies and the file can be sourced
+-- by hand. It replaced a parsed markdown table -- the table needed its own
+-- syntax rules for something vim already expresses.
 --
---   dk = D'khara
+-- The one thing added on the way in is `<buffer>`. Abbreviations are installed
+-- BUFFER-LOCALLY, which is what keeps vaults apart: `dk` can mean D'khara in
+-- one book and something else in another, with both open at once. Plain global
+-- `:iabbrev` would leak across every vault.
 --
 -- NOTE: `set paste` disables insert-mode abbreviations entirely. It is
 -- deliberately absent from this config; do not reintroduce it.
@@ -20,87 +21,90 @@ local vault = require("writing.vault")
 
 local M = {}
 
-M.filename = "Abbreviations.md"
+M.filename = "abbreviations.vim"
 
---- Full vault-relative path, derived from vault.support.
+--- The markdown table this replaced. Still read if no .vim file exists, and
+--- converted by `:AbbrevEdit`.
+M.legacy = "Abbreviations.md"
+
 function M.relative()
   return vault.support .. "/" .. M.filename
 end
 
-local function is_separator(line)
-  return line:match("^%s*|?[%s:|-]+|?%s*$") ~= nil and line:match("%-%-") ~= nil
-end
-
---- Parse the abbreviations file into a list of {lhs, rhs} pairs.
-local function parse(lines)
-  local pairs_out = {}
-
-  for i, line in ipairs(lines) do
-    if line:match("^%s*$") or line:match("^%s*#") or is_separator(line) then
-      goto continue
-    end
-
-    local lhs, rhs
-
-    if line:match("^%s*|") then
-      -- Markdown table row. Skip a header row (one followed by a separator).
-      if lines[i + 1] and is_separator(lines[i + 1]) then
-        goto continue
-      end
-      local cells = {}
-      for cell in line:gmatch("|([^|]*)") do
-        table.insert(cells, vim.trim(cell))
-      end
-      lhs, rhs = cells[1], cells[2]
-    else
-      lhs, rhs = line:match("^%s*(%S+)%s*=%s*(.-)%s*$")
-    end
-
-    if lhs and rhs and lhs ~= "" and rhs ~= "" and not lhs:find("%s") then
-      table.insert(pairs_out, { lhs = lhs, rhs = rhs })
-    end
-
-    ::continue::
+--- Does this line define an abbreviation? Covers vim's abbreviated spellings
+--- (`ab`, `abbr`, `iab`, `inoreab`, ...).
+local function abbrev_command(line)
+  local cmd = line:match("^%s*([%a]+)")
+  if not cmd then
+    return false
   end
-
-  return pairs_out
+  for _, prefix in ipairs({ "ab", "iab", "cab", "noreab", "inoreab", "cnoreab" }) do
+    if vim.startswith(cmd, prefix) then
+      return true
+    end
+  end
+  return false
 end
 
---- Escape an expansion for use as the {rhs} of an :iabbrev.
-local function escape_rhs(rhs)
-  -- A bare `|` would terminate the command; a bare `<` could be read as a key code.
-  return (rhs:gsub("<", "<lt>"):gsub("|", "\\|"))
+--- Add `<buffer>` to an abbreviation command that doesn't already have it.
+local function scope_to_buffer(line)
+  if not abbrev_command(line) or line:find("<buffer>", 1, true) then
+    return line
+  end
+  return (line:gsub("^(%s*[%a]+)%s+", "%1 <buffer> ", 1))
 end
 
---- Read and install abbreviations for a buffer. Silent when there's no file.
---- @return integer count installed
+--- Read the legacy markdown table, so an existing vault keeps working.
+local function legacy_lines(root)
+  local path = root .. "/" .. vault.support .. "/" .. M.legacy
+  if vim.fn.filereadable(path) == 0 then
+    return nil
+  end
+  local ok, lines = pcall(vim.fn.readfile, path)
+  if not ok then
+    return nil
+  end
+  local out = {}
+  for _, entry in ipairs(require("writing.mdtable").parse(lines)) do
+    table.insert(out, string.format("iabbrev %s %s", entry.key, entry.value))
+  end
+  return out
+end
+
+--- Install this vault's abbreviations into a buffer.
+--- @return integer count
 function M.apply(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
-
-  local path = vault.support_path(M.filename, bufnr)
-  if not path or not vim.uv.fs_stat(path) then
+  local root = vault.root(bufnr)
+  if not root then
     return 0
   end
 
-  local ok, lines = pcall(vim.fn.readfile, path)
-  if not ok then
+  local path = root .. "/" .. M.relative()
+  local lines
+  if vim.fn.filereadable(path) == 1 then
+    local ok, read = pcall(vim.fn.readfile, path)
+    lines = ok and read or nil
+  else
+    lines = legacy_lines(root)
+  end
+  if not lines then
     return 0
   end
 
   local count = 0
   vim.api.nvim_buf_call(bufnr, function()
-    for _, entry in ipairs(parse(lines)) do
-      local cmd = string.format("iabbrev <buffer> %s %s", entry.lhs, escape_rhs(entry.rhs))
-      if pcall(vim.cmd, cmd) then
-        count = count + 1
+    for _, line in ipairs(lines) do
+      if vim.trim(line) ~= "" and not vim.startswith(vim.trim(line), '"') then
+        if pcall(vim.cmd, scope_to_buffer(line)) then
+          count = count + 1
+        end
       end
     end
   end)
-
   return count
 end
 
---- Re-read the file and reapply to every loaded markdown buffer.
 function M.reload()
   local total = 0
   for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
@@ -114,25 +118,33 @@ function M.reload()
   vim.notify(string.format("Reloaded %d abbreviation(s)", total))
 end
 
---- Open the current vault's abbreviations file, seeding it if absent.
+--- Open this vault's abbreviations, converting a legacy table if there is one.
 function M.edit()
-  local path = vault.support_path(M.filename)
-  if not path then
+  local root = vault.root()
+  if not root then
     vim.notify("Not inside an Obsidian vault", vim.log.levels.WARN)
     return
   end
 
-  if not vim.uv.fs_stat(path) then
+  local path = root .. "/" .. M.relative()
+
+  if vim.fn.filereadable(path) == 0 then
     vim.fn.mkdir(vim.fs.dirname(path), "p")
-    vim.fn.writefile({
-      "# Abbreviations",
+    local body = {
+      '" Abbreviations for this vault. Ordinary vim commands -- `<buffer>` is',
+      '" added automatically, so these stay local to this book.',
+      '" Saving this file applies it immediately.',
       "",
-      "Expanded automatically while editing markdown in this vault.",
-      "Reload after editing with `:AbbrevReload`.",
-      "",
-      "| Abbr | Expands to |",
-      "| ---- | ---------- |",
-    }, path)
+    }
+    local migrated = legacy_lines(root)
+    if migrated and #migrated > 0 then
+      vim.list_extend(body, migrated)
+      vim.fn.writefile(body, path)
+      vim.notify(string.format("Converted %d abbreviation(s) from %s", #migrated, M.legacy))
+    else
+      table.insert(body, "iabbrev ")
+      vim.fn.writefile(body, path)
+    end
   end
 
   vim.cmd.edit(vim.fn.fnameescape(path))
@@ -149,11 +161,10 @@ function M.setup()
     end,
   })
 
-  -- Saving the abbreviations file reloads it everywhere, so adding one is just
-  -- `<Leader>wa`, type, `:w` -- no separate reload step.
+  -- Saving reapplies everywhere, so adding one is `<Leader>wa`, type, `:w`.
   vim.api.nvim_create_autocmd("BufWritePost", {
     group = group,
-    pattern = "*/" .. M.relative(),
+    pattern = { "*/" .. M.relative(), "*/" .. vault.support .. "/" .. M.legacy },
     callback = function()
       M.reload()
     end,

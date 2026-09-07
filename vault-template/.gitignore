@@ -7,3 +7,7 @@
 .obsidian/workspace-mobile.json
 
 .DS_Store
+
+# NOT ignored, deliberately: .scriptorium/session.vim is the saved window
+# layout. It changes on every exit, but committing it is what lets the layout
+# follow the book between machines.

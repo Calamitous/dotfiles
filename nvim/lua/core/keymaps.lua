@@ -7,11 +7,40 @@ local map = vim.keymap.set
 
 map("i", "kj", "<Esc>", { desc = "Leave insert mode" })
 
+-- Quit everything. `:q` closes one window at a time, which is tedious with a
+-- reading-mode or split layout open.
+map("n", "<Leader>q", "<Cmd>confirm qall<CR>", { desc = "Quit (prompts if unsaved)" })
+map("n", "<Leader>Q", "<Cmd>wqall<CR>", { desc = "Save all and quit" })
+
 map("n", "<Leader>?", "<Cmd>WritingHelp<CR>", { desc = "Show writing commands" })
-map("n", "<F2>", "<Cmd>ObsidianRename<CR>", { desc = "Rename the file, updating all wikilinks references to it." })
 
 -- Fuzzy finding (vault-scoped)
 map("n", "<Leader>o", "<Cmd>Files<CR>", { desc = "Find files in vault" })
+map("n", "<Leader>f", "<Cmd>Bookmark<CR>", { desc = "Open a bookmarked file" })
+
+-- <C-o>/<C-i> walk the jumplist a jump at a time, including motions within the
+-- file you're already in. These skip to where the FILE changes, which is
+-- usually what "go back" means when cross-referencing. For within-file history
+-- use `g;` / `g,` (the change list) or `''` (last position before a jump).
+map("n", "<C-o>", function()
+  if not require("writing.find").jump_file(-1) then
+    vim.notify("No earlier file in the jumplist")
+  end
+end, { desc = "Jump back to the previous file" })
+map("n", "<C-i>", function()
+  if not require("writing.find").jump_file(1) then
+    vim.notify("No later file in the jumplist")
+  end
+end, { desc = "Jump forward to the next file" })
+
+-- Resizing panes.
+-- Reading-aware: in a centred pane these move the split boundary rather than
+-- the text column, which a plain `:vertical resize` would hit instead.
+map("n", "<C-Left>", function() require("writing.reading").resize(-5) end, { desc = "Narrow this pane" })
+map("n", "<C-Right>", function() require("writing.reading").resize(5) end, { desc = "Widen this pane" })
+map("n", "<C-Up>", "<Cmd>resize +3<CR>", { desc = "Taller" })
+map("n", "<C-Down>", "<Cmd>resize -3<CR>", { desc = "Shorter" })
+map("n", "<Leader>=", "<C-w>=", { desc = "Equalise panes" })
 
 map("n", "<F8>", "<Cmd>Grep<CR>", { desc = "Grep vault contents" })
 map("n", "<Leader>/", "<Cmd>Grep<CR>", { desc = "Grep vault contents" })
@@ -77,8 +106,10 @@ map("n", "gf", function()
   end
 end, { desc = "Follow wikilink / file under cursor" })
 
-map("n", "<Leader>kr", "<Cmd>Obsidian rename<CR>", { desc = "Rename note + rewrite links" })
-map("n", "<F2>", "<Cmd>Obsidian rename<CR>", { desc = "Rename note + rewrite links" })
+-- One rename for everything. In a Longform draft it also fixes the scene list;
+-- elsewhere it's an ordinary note rename. The decision lives in
+-- writing/scene.lua (M.plan), not here.
+map("n", "<F2>", "<Cmd>Rename<CR>", { desc = "Rename note (+ draft, in a scene)" })
 
 map("n", "<Leader>kf", "<Cmd>Obsidian follow_link<CR>", { desc = "Follow wikilink" })
 map("n", "<Leader>kb", "<Cmd>Obsidian backlinks<CR>", { desc = "Backlinks" })
@@ -113,7 +144,12 @@ map({ "n", "i" }, "<F9>", "<Cmd>Compile<CR>", { desc = "Compile manuscript" })
 map("n", "<Leader>mk", "<Cmd>CompileCheck<CR>", { desc = "Compile check (diff only)" })
 map("n", "<Leader>ml", "<Cmd>CompileList<CR>", { desc = "List drafts" })
 map("n", "<Leader>ms", "<Cmd>CompileSteps<CR>", { desc = "Show compile pipeline" })
+map("n", "<Leader>mn", "<Cmd>NewScene<CR>", { desc = "New chapter from template" })
+map("n", "<Leader>mr", "<Cmd>Rename<CR>", { desc = "Rename note (+ draft, in a scene)" })
 
 -- Checkboxes
 map("n", "<Leader>l", "<Cmd>CheckboxToggle<CR>", { desc = "Toggle checkbox" })
 map("v", "<Leader>l", ":CheckboxToggle<CR>", { desc = "Toggle checkboxes" })
+
+-- Comments
+map("n", "<Leader>c", "O%%  %%<Esc>hhi", { desc = "Add empty comment line above this one." })

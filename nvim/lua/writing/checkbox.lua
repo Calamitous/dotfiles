@@ -3,7 +3,9 @@
 --   - [ ] task   ->  - [x] task      toggle
 --   - [x] task   ->  - [ ] task      toggle back
 --   - task       ->  - [ ] task      add a checkbox to a bare list item
---   plain text   ->  (left alone)
+--   plain text   ->  - [ ] plain text
+--   (blank)      ->  - [ ]           start a list in place
+--   # heading    ->  (left alone)
 --
 -- Works on the current line, or over a visual selection.
 
@@ -17,11 +19,19 @@ local function marker(line)
   return line:match(BULLET) or line:match(ORDERED)
 end
 
---- Toggle one line. Returns the new text, or nil if it isn't a list item.
+--- Toggle one line. Returns the new text, or nil if it should be left alone.
 function M.toggle_line(line)
   local prefix = marker(line)
+
   if not prefix then
-    return nil
+    -- Not a list item. Headings are left alone -- turning "# Chapter 5" into a
+    -- checkbox is never what was meant -- but anything else, blank lines
+    -- included, becomes a new unchecked item so a list can be started in place.
+    if line:match("^%s*#") then
+      return nil
+    end
+    local indent, text = line:match("^(%s*)(.*)$")
+    return indent .. "- [ ] " .. text
   end
 
   local rest = line:sub(#prefix + 1)
@@ -56,7 +66,7 @@ function M.toggle(first, last)
   end
 
   if changed == 0 then
-    vim.notify("No list item here", vim.log.levels.WARN)
+    vim.notify("Nothing to toggle here", vim.log.levels.WARN)
     return
   end
 
