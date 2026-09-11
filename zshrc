@@ -69,8 +69,11 @@ zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 zstyle ':completion:*:(s|ssh|scp|ftp|sftp):*' hosts $hosts
 zstyle ':completion:*:(s|ssh|scp|ftp|sftp):*' users $users
 
-# Allow for autocomplete to be case insensitive
-zstyle ':completion:*' matcher-list '' 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' '+l:|?=** r:|?=**'
+# Allow for autocomplete to be case insensitive.
+# (Dropped the old '+l:|?=** r:|?=**' substring matcher: on a NO-match Tab it
+#  duplicated the first char of the word and had to be manually deleted. The
+#  m:{...} rule below is the case-insensitive part and behaves correctly.)
+zstyle ':completion:*' matcher-list '' 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}'
 
 # Initialize the autocompletion
 # export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*"'
