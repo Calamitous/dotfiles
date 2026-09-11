@@ -67,4 +67,24 @@ t.it("reports when there is no earlier file", function()
   t.ok(not find.jump_file(-1), "nothing to go back to")
 end)
 
+t.it("steps past a jumplist mark left dangling by a reload", function()
+  V.reset()
+  local a = V.root .. "/a.md"
+
+  vim.cmd("edit " .. a)
+  vim.cmd("normal! G")                       -- jump to line 5 of a.md
+  vim.cmd("edit " .. V.root .. "/b.md")
+
+  -- Shorten a.md behind nvim's back, the way saving the abbreviations file
+  -- does, and let autoread pick it up. Marks are adjusted for YOUR edits but
+  -- not for a re-read, so the jumplist still points at line 5 of a file that
+  -- now has two -- and jumping onto it raises E19.
+  vim.fn.writefile({ "aaa", "bbb" }, a)
+  vim.cmd("checktime")
+
+  local ok, err = pcall(find.jump_file, -1)
+  t.ok(ok, "no E19 escapes to the keymap: " .. tostring(err))
+  t.matches(vim.api.nvim_buf_get_name(0), "a%.md$", "still lands in the previous file")
+end)
+
 V.destroy()

@@ -202,20 +202,27 @@ function M.jump_file(direction)
     local buf = vim.api.nvim_get_current_buf()
     local pos = vim.api.nvim_win_get_cursor(0)
 
-    vim.cmd("normal! " .. key)
+    -- A jumplist entry outlives the line it points at. Marks are adjusted when
+    -- YOU edit a file, but not when the file is re-read from disk -- so saving
+    -- a shorter abbreviations.vim (which auto-reloads) leaves marks pointing
+    -- past the new end, and <C-o> onto one raises E19. Vim has already moved
+    -- the jumplist pointer and landed the cursor (clamped) by the time it
+    -- complains, so the jump itself succeeded: swallow the error and carry on.
+    local ok = pcall(vim.cmd, "normal! " .. key)
+
+    if vim.api.nvim_buf_get_name(0) ~= start then
+      return true
+    end
 
     -- Stop when the POSITION stops moving -- the end of the jumplist. Watching
     -- the buffer instead would stop at the first same-file jump, which is
-    -- precisely what this is meant to step over.
-    if vim.api.nvim_get_current_buf() == buf then
+    -- precisely what this is meant to step over. A failed jump doesn't count
+    -- as standing still; it means step past the bad entry.
+    if ok and vim.api.nvim_get_current_buf() == buf then
       local now = vim.api.nvim_win_get_cursor(0)
       if now[1] == pos[1] and now[2] == pos[2] then
         break
       end
-    end
-
-    if vim.api.nvim_buf_get_name(0) ~= start then
-      return true
     end
   end
   return false
