@@ -61,6 +61,20 @@ t.it("skips jumps made within the same file", function()
   t.matches(vim.api.nvim_buf_get_name(0), "a%.md$", "landed in the previous FILE, not a prior line of b.md")
 end)
 
+t.it("walks forward again after jumping back", function()
+  V.reset()
+  vim.cmd("edit " .. V.root .. "/a.md")
+  vim.cmd("normal! G")
+  vim.cmd("edit " .. V.root .. "/b.md")
+  vim.cmd("normal! G")
+
+  t.ok(find.jump_file(-1), "jumped back")
+  t.matches(vim.api.nvim_buf_get_name(0), "a%.md$", "landed in a.md")
+
+  t.ok(find.jump_file(1), "and forward again")
+  t.matches(vim.api.nvim_buf_get_name(0), "b%.md$", "back in b.md")
+end)
+
 t.it("reports when there is no earlier file", function()
   V.reset()
   vim.cmd("edit " .. V.root .. "/a.md")

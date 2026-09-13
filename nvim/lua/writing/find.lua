@@ -196,7 +196,13 @@ end
 --- @param direction integer  -1 back, 1 forward
 function M.jump_file(direction)
   local start = vim.api.nvim_buf_get_name(0)
-  local key = vim.api.nvim_replace_termcodes(direction < 0 and "<C-o>" or "<C-i>", true, false, true)
+  -- The leading count is load-bearing. <C-i> IS a literal Tab, and `:normal!`
+  -- skips every whitespace character between the bang and its argument -- so
+  -- `normal! <Tab>` is "E471: Argument required" and the forward jump silently
+  -- never happened. Starting the argument with `1` gives the parser something
+  -- non-blank to bite on. (nvim_feedkeys dodges that but prints E19 as an
+  -- uncatchable message instead of raising it; see below.)
+  local key = "1" .. vim.api.nvim_replace_termcodes(direction < 0 and "<C-o>" or "<C-i>", true, false, true)
 
   for _ = 1, 100 do
     local buf = vim.api.nvim_get_current_buf()
