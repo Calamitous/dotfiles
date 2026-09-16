@@ -183,6 +183,36 @@ editor jumping to a corner of the screen.
 paste into Google Docs or Word arrives formatted. Frontmatter, `%%comments%%`
 and wikilink syntax are stripped first.
 
+On macOS the HTML has to take a detour. `pbcopy` writes only the plain-text and
+RTF pasteboard flavors — it cannot carry `text/html` at all — so the content is
+hex-encoded and handed to AppleScript, which sets **two** flavors at once: the
+HTML, and the markdown as plain text. HTML alone would mean a paste into a
+terminal or a plain text field lands empty. Hex rather than a quoted string so
+no quote, backslash or newline in the prose needs escaping on the way through.
+
+To see what actually landed on the pasteboard:
+
+```sh
+osascript -e 'clipboard info'
+```
+An earlier version converted to RTF with `textutil` instead; that pastes as
+formatted text, but RTF has no horizontal-rule element, so every `---` scene
+break was silently dropped. `M.pipelines.mac_rtf` in `lua/core/platform.lua`
+keeps that route if AppleScript ever proves troublesome.
+
+The reader is `markdown-smart`, not plain `markdown`. pandoc's smart-punctuation
+extension is on by default and rewrites straight quotes as curly, `--` as an en
+dash and `...` as an ellipsis; the clipboard hands over the manuscript as
+written instead.
+
+pandoc is asked for `--ascii` everywhere: its fragment declares no charset, so
+an em dash or curly quote is otherwise at the mercy of whatever encoding the
+receiving app assumes. Entities aren't.
+
+The pipeline runs under `bash -o pipefail`. Without it the exit status is the
+last command's, so a failure upstream still ends in a successful copy — of
+nothing — and nothing is reported.
+
 ### Counts
 | Key | Command | Does |
 |---|---|---|

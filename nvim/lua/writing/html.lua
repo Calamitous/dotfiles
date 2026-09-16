@@ -33,7 +33,10 @@ local function to_clipboard(lines)
   local words = select(2, md:gsub("%S+", ""))
 
   -- Run asynchronously: pandoc on a long chapter shouldn't freeze the editor.
-  vim.system({ "sh", "-c", cmd }, { stdin = md }, function(result)
+  local argv = require("core.platform").shell()
+  table.insert(argv, cmd)
+
+  vim.system(argv, { stdin = md }, function(result)
     vim.schedule(function()
       if result.code ~= 0 then
         local err = result.stderr
