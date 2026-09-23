@@ -15,7 +15,7 @@ local vault = require("writing.vault")
 
 local M = {}
 
-M.width = 32
+M.width = 64
 
 --- Close the sidebar after opening a file, matching NERDTreeQuitOnOpen.
 M.close_on_open = true
