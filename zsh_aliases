@@ -90,3 +90,10 @@ alias mpv_sonatas="mpv http://ericbudd%40mount-olive%2Ecom:JDEkYlRJRFdmU24kMWlrc
 alias mpv_dvorak="mpv http://ericbudd%40mount-olive%2Ecom:JDEkYlRJRFdmU24kMWlrcEhaeDRFNGZ6WnN2TExNdlg5Lg==@streams.calmradio.com:10514/stream"
 alias mpv_piano_hymns="mpv http://ericbudd%40mount-olive%2Ecom:JDEkYlRJRFdmU24kMWlrcEhaeDRFNGZ6WnN2TExNdlg5Lg==@streams.calmradio.com:17256/stream"
 alias gcm="git commit -m"
+
+alias tag-clean='tagdir audience clean'
+alias tag-edgy='tagdir audience edgy'
+alias tag-explicit='tagdir audience explicit'
+alias tag-christmas='tagdir seasonal christmas'
+alias tag-instr='tagdir instrumental 1'
+alias tag-vocal='tagdir instrumental 0'

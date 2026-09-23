@@ -117,4 +117,26 @@ export NVM_DIR="$HOME/.nvm"
 # grok
 # export PATH=/home/eric/.grok/bin:$PATH
 
+# Recursively tag every audio file under a directory with a custom tag.
+# usage: tagdir <tag> <value> [dir]   (dir defaults to the current directory)
+tagdir() {
+  emulate -L zsh
+  local tag=$1 val=$2 dir=${3:-.}
+  [[ -n $tag && -n $val ]] || { print "usage: tagdir <tag> <value> [dir]"; return 1 }
+  find "$dir" -type f \( -iname '*.mp3' -o -iname '*.ogg' -o -iname '*.flac' -o -iname '*.m4a' \) -print0 \
+    | xargs -0 -I{} kid3-cli -c "select all" -c "set $tag $val" -c "save" "{}" \
+    2>&1 | grep -v 'Could not find an MPEG frame'
+}
+
+# Folders that still have songs missing a tag (default: audience), most-untagged first.
+# usage: untagged-report [tag] [dir]
+untagged-report() {
+  emulate -L zsh
+  local tag=${1:-Audience} dir=${2:-/srv/music}
+  exiftool -r -q -m -ext mp3 -ext ogg -ext flac -ext m4a -T "-$tag" -Directory "$dir" 2>/dev/null \
+    | awk -F'\t' '$1=="-"{print $2}' \
+    | sed "s#^${dir%/}/##" \
+    | sort | uniq -c | sort -rn
+}
+
 export DISPLAY=:0
