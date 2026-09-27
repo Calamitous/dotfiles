@@ -90,6 +90,58 @@ t.it("reports when the scene isn't listed", function()
   t.ok(not scene.retitle(V.root .. "/N/Index.md", "nope", "x"), "returns false")
 end)
 
+t.describe("the Obsidian guard")
+
+-- Obsidian running is not Obsidian holding a vault: it sits in the tray/dock
+-- with every window closed, caching nothing. These cover the decision without
+-- needing an Obsidian to be up or down.
+
+local function config(json)
+  local path = V.root .. "/.scriptorium/obsidian.json"
+  vim.fn.writefile({ json }, path)
+  scene.config_path = path
+  return path
+end
+
+t.it("reads the vault Obsidian last opened", function()
+  config(vim.json.encode({
+    vaults = {
+      aaa = { path = "/home/x/Writing/other" },
+      bbb = { path = "/home/x/Writing/current", open = true },
+    },
+  }))
+  t.eq(scene.open_vault(), "/home/x/Writing/current", "the entry flagged open")
+end)
+
+t.it("says nothing rather than guessing when the config is unreadable", function()
+  scene.config_path = V.root .. "/.scriptorium/nope.json"
+  t.eq(scene.open_vault(), nil, "missing file")
+  config("{ not json")
+  t.eq(scene.open_vault(), nil, "garbage file")
+  config(vim.json.encode({ vaults = { aaa = { path = "/home/x/Writing/other" } } }))
+  t.eq(scene.open_vault(), nil, "no vault flagged open")
+  scene.config_path = nil
+end)
+
+t.it("a running Obsidian on another vault is no threat to this one", function()
+  t.eq(scene.at_risk(true, "/home/x/Writing/other", "/home/x/Writing/mine"), false)
+end)
+
+t.it("warns when the open vault is this one", function()
+  t.eq(scene.at_risk(true, "/home/x/Writing/mine", "/home/x/Writing/mine"), true)
+  t.eq(scene.at_risk(true, "/home/x/Writing/mine", "/home/x/Writing/mine/"), true,
+    "trailing slash is the same vault")
+end)
+
+t.it("warns when it can't tell which vault is open", function()
+  t.eq(scene.at_risk(true, nil, "/home/x/Writing/mine"), true, "unknown is not safe")
+end)
+
+t.it("stays quiet when Obsidian isn't running at all", function()
+  t.eq(scene.at_risk(false, "/home/x/Writing/mine", "/home/x/Writing/mine"), false,
+    "the stale open flag outlives the app, so running is the deciding half")
+end)
+
 -- The full rename goes through obsidian-ls, which only registers workspaces
 -- found under ~/Writing when it loads -- a vault created mid-run isn't one.
 -- The index half is covered above; this exercises the whole path when it can.

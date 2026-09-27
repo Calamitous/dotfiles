@@ -701,9 +701,15 @@ draft's scene list**, then opens it. `:SceneTemplate` edits the template.
 This is the only thing in Scriptorium that writes `Index.md`, so it takes two
 precautions:
 
-- **It refuses while Obsidian is running.** Obsidian caches `Index.md` in
-  memory and flushes on change, so it would overwrite the new scene and you'd
-  lose it silently.
+- **It warns when Obsidian has this vault open.** Obsidian caches `Index.md` in
+  memory and flushes on change, so it can overwrite the new chapter and you'd
+  lose it silently. The warning is a prompt, not a refusal, because the app
+  being *up* isn't the question: it sits in the tray or the dock with every
+  window closed, holding nothing. So the check also reads Obsidian's own config
+  for the vault it last opened and stays quiet when that's some other book.
+  When it can't rule this vault out it asks, and if you continue it re-reads
+  the scene list a couple of seconds later and tells you if Obsidian did
+  clobber it. `:NewScene!` / `:Rename!` skip the prompt.
 - **It appends one line textually** rather than parsing and re-emitting the
   YAML, which would lose your `compile:` block's formatting and could reorder
   keys.
@@ -722,7 +728,7 @@ folder — gets an ordinary rename with its wikilinks rewritten.
 
 The decision is `scene.plan()`, a pure function with no IO, so all four cases are
 covered by specs; only the LSP rename itself is left to obsidian.nvim. The
-Obsidian-not-running guard applies when the scene list is being touched.
+Obsidian guard above applies when the scene list is being touched.
 
 ### Which draft gets compiled
 
