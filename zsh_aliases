@@ -97,3 +97,27 @@ alias tag-explicit='tagdir audience explicit'
 alias tag-christmas='tagdir seasonal christmas'
 alias tag-instr='tagdir instrumental 1'
 alias tag-vocal='tagdir instrumental 0'
+
+mpv_playlists() {
+  emulate -L zsh
+  local salt=$(head -c8 /dev/urandom | od -An -tx1 | tr -d ' \n')
+  local tok=$(print -n -- "${ND_PASS}${salt}" | md5sum | cut -d' ' -f1)
+  curl -s "${ND_URL}/rest/getPlaylists?u=${ND_USER}&t=${tok}&s=${salt}&v=1.16.1&c=mpv&f=json" \
+    | jq -r '.["subsonic-response"].playlists.playlist[]?.name'
+}
+
+mpv_play() {
+  emulate -L zsh
+  local name=$1; [[ -n $name ]] || { print "usage: ndplay <playlist> [mpv args]"; return 1 }
+  shift
+  local salt=$(head -c8 /dev/urandom | od -An -tx1 | tr -d ' \n')
+  local tok=$(print -n -- "${ND_PASS}${salt}" | md5sum | cut -d' ' -f1)
+  local auth="u=${ND_USER}&t=${tok}&s=${salt}&v=1.16.1&c=mpv&f=json"
+  local pid=$(curl -s "${ND_URL}/rest/getPlaylists?${auth}" \
+    | jq -r --arg n "$name" '.["subsonic-response"].playlists.playlist[]?|select(.name==$n)|.id' | head -1)
+  [[ -n $pid ]] || { print "no playlist named \"$name\" — run ndlists to see the names"; return 1 }
+  curl -s "${ND_URL}/rest/getPlaylist?id=${pid}&${auth}" \
+    | jq -r '.["subsonic-response"].playlist.entry[]?.id' \
+    | while read -r id; do print -- "${ND_URL}/rest/stream?id=${id}&${auth}"; done \
+    | mpv --no-video --playlist=/dev/stdin "$@"
+}
