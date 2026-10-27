@@ -290,6 +290,46 @@ t.it("escapes a pad whose pane is no longer tracked", function()
   t.eq(#pad, 0, "swept the orphans")
 end)
 
+-- Until WinResized was listened for, a width that changed without any window
+-- opening or closing was never re-measured: the pane sat at whatever it had
+-- drifted to for the rest of the session.
+t.it("re-measures after a width change with no window opening or closing", function()
+  vim.o.columns = 220
+  open(1)
+  local win = vim.api.nvim_get_current_win()
+  t.ok(reading.enable(win), "centred")
+
+  vim.api.nvim_win_set_width(win, 60)
+  t.eq(vim.api.nvim_win_get_width(win), 60, "narrowed, as a stray resize would")
+  vim.cmd("doautocmd WinResized")
+  vim.wait(300)
+
+  t.ok(reading.is_active(win), "still centred")
+  t.eq(vim.api.nvim_win_get_width(win), reading.width, "and back to 80")
+  reading.disable_all()
+end)
+
+-- `:edit` loses the window-local `fillchars`, which is what blends the margins
+-- and hides the end-of-buffer markers; a filetype that wants a number or sign
+-- column narrows the text from the inside without touching the width.
+t.it("re-asserts its window options when a file is opened into the pane", function()
+  vim.o.columns = 220
+  open(1)
+  local win = vim.api.nvim_get_current_win()
+  t.ok(reading.enable(win), "centred")
+  local want = vim.wo[win].fillchars
+  t.matches(want, "eob:", "reading mode set fillchars to begin with")
+
+  vim.wo[win].fillchars = ""
+  vim.wo[win].number = true
+  vim.cmd("edit " .. V.root .. "/N/2.md")
+  vim.wait(300)
+
+  t.eq(vim.wo[win].fillchars, want, "fillchars back")
+  t.eq(vim.wo[win].number, false, "and no number column eating into the 80")
+  reading.disable_all()
+end)
+
 t.it("keeps the margins of panes that are still tracked", function()
   vim.o.columns = 300
   open(2)

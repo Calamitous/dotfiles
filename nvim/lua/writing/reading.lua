@@ -51,6 +51,29 @@ local function configure_pad(win, width)
   wo.winhl = "Normal:ReadingPad,EndOfBuffer:ReadingPad,WinSeparator:ReadingPad"
 end
 
+--- What a centred pane looks like. One table, because these have to be applied
+--- twice: once when the margins go up, and again every time a file is opened
+--- into the pane -- `:edit` measurably loses the window-local `fillchars`, and
+--- a filetype that wants a number, sign or fold column narrows the text from
+--- the inside without touching the window's width at all.
+local READING_WO = {
+  number = false,
+  relativenumber = false,
+  list = false,
+  cursorline = false,
+  signcolumn = "no",
+  fillchars = "eob: ,vert: ",
+}
+
+local function apply_options(win)
+  if not vim.api.nvim_win_is_valid(win) then
+    return
+  end
+  for opt, value in pairs(READING_WO) do
+    vim.wo[win][opt] = value
+  end
+end
+
 --- Is this window one this module created?
 function M.is_pad(win)
   if not vim.api.nvim_win_is_valid(win) then
@@ -157,14 +180,10 @@ function M.enable(win, quiet)
   end
 
   local left = math.floor(total / 2)
-  local saved = {
-    number = vim.wo[win].number,
-    relativenumber = vim.wo[win].relativenumber,
-    list = vim.wo[win].list,
-    cursorline = vim.wo[win].cursorline,
-    signcolumn = vim.wo[win].signcolumn,
-    fillchars = vim.wo[win].fillchars,
-  }
+  local saved = {}
+  for opt in pairs(READING_WO) do
+    saved[opt] = vim.wo[win][opt]
+  end
 
   vim.api.nvim_set_hl(0, "ReadingPad", { link = "Normal", default = true })
 
@@ -198,13 +217,7 @@ function M.enable(win, quiet)
   -- (see M.validate).
   pcall(vim.api.nvim_win_set_width, win, M.width)
 
-  local wo = vim.wo[win]
-  wo.number = false
-  wo.relativenumber = false
-  wo.list = false
-  wo.cursorline = false
-  wo.signcolumn = "no"
-  wo.fillchars = "eob: ,vert: "
+  apply_options(win)
 
   -- Settle the whole row together against one target map. Setting any single
   -- width nudges its neighbours, so the pads, this pane and the untouched panes
@@ -284,7 +297,24 @@ end
 --- Splitting a centred pane halves it; splitting elsewhere can borrow from it.
 --- Either way the margins no longer mean anything, so take them off rather than
 --- leaving a pane flanked by pads at some arbitrary width.
+local validating = false
+
 function M.validate()
+  -- Setting a width fires WinResized, which schedules another validate. The
+  -- passes below settle to a fixed point and the next one would no-op, but
+  -- there's no reason to let them nest while this one is still working.
+  if validating then
+    return
+  end
+  validating = true
+  local ok, err = pcall(M.validate_once)
+  validating = false
+  if not ok then
+    error(err)
+  end
+end
+
+function M.validate_once()
   -- Twice: setting one pane's width nudges its neighbours, so a single pass can
   -- leave a pane a few columns off.
   for _ = 1, 2 do
@@ -382,13 +412,38 @@ function M.setup()
 
   -- If a centred pane or one of its pads goes away, drop the rest of the pair
   -- rather than leaving a stray empty column behind.
-  vim.api.nvim_create_autocmd({ "WinNew", "WinClosed", "VimResized" }, {
+  -- WinResized matters as much as the other three: a width can change without
+  -- any window opening or closing -- netrw's sidebar pinning itself, a plugin
+  -- nudging a neighbour, a bare `:vertical resize` -- and until this was
+  -- listened for, nothing ever re-measured. The pane stayed where it had
+  -- drifted to for the rest of the session, which is the "it went narrow and
+  -- stayed narrow" everyone kept reporting.
+  vim.api.nvim_create_autocmd({ "WinNew", "WinClosed", "WinResized", "VimResized" }, {
     group = group,
     callback = function()
       if vim.tbl_isempty(M.panes) then
         return
       end
       vim.schedule(M.validate)
+    end,
+  })
+
+  -- Opening a file into a centred pane runs its ftplugins, and what they set on
+  -- the window outlives the buffer that triggered it. Put reading mode's own
+  -- settings back on top afterwards -- scheduled, so it lands after the
+  -- ftplugin rather than racing it.
+  vim.api.nvim_create_autocmd({ "BufWinEnter", "FileType" }, {
+    group = group,
+    callback = function()
+      local win = vim.api.nvim_get_current_win()
+      if not M.panes[win] then
+        return
+      end
+      vim.schedule(function()
+        if M.panes[win] then
+          apply_options(win)
+        end
+      end)
     end,
   })
 

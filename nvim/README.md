@@ -175,7 +175,13 @@ means whichever went last wins.
 Three further details that took some finding: the centred pane is **not** pinned with
 `winfixwidth`, because pinning it means vim takes columns from the *other* panes
 when a split opens — which looks like reading mode resizing windows it has
-nothing to do with. Instead it reclaims width from its own margins. Splitting a
+nothing to do with. Instead it reclaims width from its own margins — on any
+width change, including ones where no window opened or closed, which is the
+case that used to slip through and leave a pane narrow for the rest of the
+session. Opening a file into a centred pane also re-asserts the pane's own
+window options, because `:edit` loses the `fillchars` that blends the margins
+and a filetype wanting a number or sign column narrows the text from the inside
+without touching the width. Splitting a
 centred pane drops its centring rather than squeezing the new sibling into the
 margins, detected by a stranger appearing between the pads (width alone can't
 tell: vim borrows from the pads too, so a split leaves the pane at ~74 rather
