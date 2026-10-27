@@ -351,4 +351,140 @@ t.it("keeps the margins of panes that are still tracked", function()
   reading.disable_all()
 end)
 
+t.describe("reading mode: the typewriter platen")
+
+-- One line per paragraph, soft-wrapped over several screen rows: the shape of
+-- every file in the vault, and the case that breaks `topline` arithmetic.
+local PARAS = {}
+for i = 1, 60 do
+  PARAS[i] = ("Paragraph %d. "):format(i) .. string.rep("word ", 60)
+end
+V.create({ ["N/1.md"] = "One.", ["N/2.md"] = "Two.", ["N/3.md"] = "Three.",
+  ["N/long.md"] = table.concat(PARAS, "\n") })
+
+local function centre_of(win)
+  return math.ceil(vim.api.nvim_win_get_height(win) / 2)
+end
+
+local function open_long()
+  reading.disable_all()
+  vim.wait(50)
+  V.reset()
+  vim.cmd("edit " .. V.root .. "/N/long.md")
+  vim.cmd("wincmd =")
+  vim.o.wrap = true
+  vim.o.linebreak = true
+end
+
+t.it("holds the cursor on the middle row at the end of the file", function()
+  vim.o.columns = 220
+  open_long()
+  local win = vim.api.nvim_get_current_win()
+  t.ok(reading.enable(win), "centred")
+
+  vim.cmd("normal! G")
+  reading.centre_cursor(win)
+  t.eq(vim.fn.line("."), vim.fn.line("$"), "on the last line")
+  t.eq(vim.fn.winline(), centre_of(win), "and on the middle row")
+  reading.disable_all()
+end)
+
+-- scrolloff, at any value, gives up here: there is nothing below the last line
+-- to scroll into view, so the cursor walks down to the bottom row instead.
+t.it("does what scrolloff cannot", function()
+  vim.o.columns = 220
+  open_long()
+  local win = vim.api.nvim_get_current_win()
+
+  vim.wo[win].scrolloff = 999
+  vim.cmd("normal! gg")
+  for _ = 1, 400 do
+    vim.cmd("normal! gj")
+  end
+  local without = vim.fn.winline()
+
+  t.ok(reading.enable(win), "centred")
+  vim.cmd("normal! G")
+  reading.centre_cursor(win)
+
+  t.ok(without > centre_of(win), "scrolloff alone left the cursor below the middle")
+  t.eq(vim.fn.winline(), centre_of(win), "the platen holds it there")
+  reading.disable_all()
+end)
+
+t.it("does not sawtooth through wrapped paragraphs", function()
+  vim.o.columns = 220
+  open_long()
+  local win = vim.api.nvim_get_current_win()
+  t.ok(reading.enable(win), "centred")
+  local want = centre_of(win)
+
+  -- Walk down by DISPLAY line, as prose mode's j does. Ignore the ramp-up: the
+  -- first screenful can't be centred, because there's nothing above it.
+  vim.cmd("normal! gg")
+  local rows, settled = {}, false
+  for _ = 1, 120 do
+    vim.cmd("normal! gj")
+    reading.centre_cursor(win)
+    local row = vim.fn.winline()
+    settled = settled or row == want
+    if settled then
+      table.insert(rows, row)
+    end
+  end
+
+  t.ok(#rows > 40, "walked well past the first screenful (" .. #rows .. " rows)")
+  local drift = 0
+  for _, row in ipairs(rows) do
+    drift = math.max(drift, math.abs(row - want))
+  end
+  t.eq(drift, 0, "every row was the middle one -- no sawtooth")
+  reading.disable_all()
+end)
+
+t.it("gives scrolloff and smoothscroll back on toggle off", function()
+  vim.o.columns = 220
+  open_long()
+  local win = vim.api.nvim_get_current_win()
+  vim.wo[win].scrolloff = 5
+  vim.wo[win].smoothscroll = false
+
+  t.ok(reading.enable(win), "centred")
+  t.eq(vim.wo[win].scrolloff, 0, "scrolloff out of the way while centring")
+  t.eq(vim.wo[win].smoothscroll, true, "scrolling by screen row")
+
+  reading.disable(win)
+  t.eq(vim.wo[win].scrolloff, 5, "scrolloff back")
+  t.eq(vim.wo[win].smoothscroll, false, "smoothscroll back")
+end)
+
+t.it("leaves scrolling alone when the platen is off", function()
+  vim.o.columns = 220
+  open_long()
+  local win = vim.api.nvim_get_current_win()
+  vim.wo[win].scrolloff = 5
+
+  reading.typewriter = false
+  t.ok(reading.enable(win), "centred")
+  t.eq(vim.wo[win].scrolloff, 5, "scrolloff untouched")
+  t.eq(reading.centre_cursor(win), false, "and nothing is centred")
+
+  -- Still restored correctly, even though the typewriter never applied.
+  reading.disable(win)
+  t.eq(vim.wo[win].scrolloff, 5)
+  reading.typewriter = true
+end)
+
+t.it("ignores panes it isn't centring", function()
+  vim.o.columns = 220
+  open_long()
+  local win = vim.api.nvim_get_current_win()
+  t.eq(reading.centre_cursor(win), false, "not a centred pane")
+  reading.enable(win)
+  vim.cmd("normal! G")
+  t.ok(reading.centre_cursor(win), "centred pane, cursor off the middle")
+  t.eq(reading.centre_cursor(win), false, "already on the middle row")
+  reading.disable_all()
+end)
+
 V.destroy()

@@ -165,6 +165,29 @@ freezing. Per pane needs none of it.
 
 A pane narrower than about 90 columns can't hold an 80-column centre and says so.
 
+**The typewriter platen.** Inside a centred pane the cursor line stays on the
+middle row — the paper moves, the type bar doesn't — including at the end of
+the file, where it matters most and where nothing built in will do it. Set
+`M.typewriter = false` in `lua/writing/reading.lua` to leave vertical scrolling
+alone.
+
+`scrolloff` is not the answer, even at 999: walk `j` to the last line of a
+buffer and the cursor still ends on the bottom row, because there's nothing
+below it to scroll into view. So the correction is measured in screen rows and
+applied with `<C-e>`/`<C-y>`, which *will* keep scrolling until only the last
+line is left on screen. Near the top of a file there's nothing above line 1
+either, so the cursor walks down to the middle row before it starts to hold —
+that's correct, not a failure.
+
+The measuring idea comes from [scrollEOF.nvim](https://github.com/Aasim-A/scrollEOF.nvim)
+(MIT), which applies it as `topline` arithmetic. That reads the same but moves
+the view a whole *buffer* line at a time — and since a paragraph here is one
+line soft-wrapped over several rows, the cursor sawtooths by the height of the
+paragraph. Hence screen rows, and window-local `smoothscroll`, which is what
+lets `<C-e>` move one row rather than one paragraph. Reading mode also drops
+window-local `scrolloff` to 0 while it's centring, since 5 would fight the
+correction; both options are saved and restored per pane like the rest.
+
 Enabling reading mode on one pane leaves every other pane **exactly** as it was.
 That needs enforcing: `leftabove vsplit` takes its columns from the pane's left
 *neighbour*, so creating the margins silently shrank an unrelated pane by 40

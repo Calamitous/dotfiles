@@ -22,6 +22,13 @@ M.width = 80
 --- Below this much padding either side, centring isn't worth doing.
 M.min_pad = 4
 
+--- Keep the cursor line in the middle of the pane while you read and type --
+--- a typewriter platen, where the paper moves and the type bar doesn't. Set it
+--- false to leave vertical scrolling alone; it stops centring immediately,
+--- though the panes already centred keep their scrolling options until they're
+--- toggled off.
+M.typewriter = true
+
 --- Centred panes: [text window] = { left, right, saved options }
 M.panes = {}
 
@@ -65,6 +72,19 @@ local READING_WO = {
   fillchars = "eob: ,vert: ",
 }
 
+--- Extra options the typewriter needs. Separate from READING_WO because
+--- dropping 'scrolloff' to 0 is only an improvement when something else is
+--- keeping the cursor off the window edge; without the centring it would make
+--- reading mode worse than the global 5.
+local TYPEWRITER_WO = {
+  scrolloff = 0,
+  -- Lets <C-e>/<C-y> scroll by SCREEN row rather than buffer line, which is
+  -- the whole trick: a paragraph here is one line, soft-wrapped over several
+  -- rows, and scrolling it a line at a time overshoots the middle by the
+  -- height of the paragraph.
+  smoothscroll = true,
+}
+
 local function apply_options(win)
   if not vim.api.nvim_win_is_valid(win) then
     return
@@ -72,6 +92,69 @@ local function apply_options(win)
   for opt, value in pairs(READING_WO) do
     vim.wo[win][opt] = value
   end
+  if M.typewriter then
+    for opt, value in pairs(TYPEWRITER_WO) do
+      vim.wo[win][opt] = value
+    end
+  end
+end
+
+--- The screen row the cursor should sit on.
+local function centre_row(win)
+  return math.ceil(vim.api.nvim_win_get_height(win) / 2)
+end
+
+local centring = false
+
+--- Scroll the pane so the cursor sits on its middle row.
+---
+--- `scrolloff` cannot do this. Even at 999 it gives up at the end of the file:
+--- walking to the last line of a buffer leaves the cursor on the bottom row,
+--- because there is nothing below to scroll into view. <C-e> keeps going --
+--- vim will happily scroll until only the last line is left on screen -- so
+--- the correction is made in screen rows, measured and applied, rather than
+--- asked for.
+---
+--- Near the top of the buffer there is nothing above the first line to scroll
+--- in either, so <C-y> no-ops and the cursor walks down to the middle row
+--- before it starts to hold. That's the right behaviour, not a failure.
+---
+--- The measure-and-scroll idea is from scrollEOF.nvim (MIT, Aasim-A), which
+--- does it with `topline` arithmetic; that reads the same in code but jumps a
+--- whole wrapped paragraph at a time, which sawtooths badly in prose.
+function M.centre_cursor(win)
+  win = win or vim.api.nvim_get_current_win()
+  if centring or not M.typewriter or not M.panes[win] then
+    return false
+  end
+
+  -- `winline()` reports the CURRENT window, so there's nothing to measure for
+  -- a pane the cursor isn't in.
+  if win ~= vim.api.nvim_get_current_win() then
+    return false
+  end
+
+  -- Normal and insert only. In visual or operator-pending a `:normal!` would
+  -- interfere with the selection or the pending operator; `:normal!` does keep
+  -- insert mode when it runs from an autocommand, so typing is fine.
+  local mode = vim.api.nvim_get_mode().mode
+  if mode ~= "n" and mode:sub(1, 1) ~= "i" then
+    return false
+  end
+
+  local row = vim.fn.winline()
+  local want = centre_row(win)
+  if row == want then
+    return false
+  end
+
+  -- \x05 is <C-e>, \x19 is <C-y>.
+  local keys = row > want and ("%d\x05"):format(row - want) or ("%d\x19"):format(want - row)
+
+  centring = true
+  pcall(vim.cmd, "normal! " .. keys)
+  centring = false
+  return true
 end
 
 --- Is this window one this module created?
@@ -180,9 +263,14 @@ function M.enable(win, quiet)
   end
 
   local left = math.floor(total / 2)
+  -- Both tables, whatever M.typewriter says right now: the flag can change
+  -- between enable and disable, and an option saved from only one of them
+  -- would leak.
   local saved = {}
-  for opt in pairs(READING_WO) do
-    saved[opt] = vim.wo[win][opt]
+  for _, tbl in ipairs({ READING_WO, TYPEWRITER_WO }) do
+    for opt in pairs(tbl) do
+      saved[opt] = vim.wo[win][opt]
+    end
   end
 
   vim.api.nvim_set_hl(0, "ReadingPad", { link = "Normal", default = true })
@@ -247,6 +335,7 @@ function M.enable(win, quiet)
   if vim.api.nvim_win_is_valid(current) then
     vim.api.nvim_set_current_win(current)
   end
+  M.centre_cursor(win)
   return true
 end
 
@@ -442,8 +531,21 @@ function M.setup()
       vim.schedule(function()
         if M.panes[win] then
           apply_options(win)
+          M.centre_cursor(win)
         end
       end)
+    end,
+  })
+
+  -- The typewriter platen. CursorMovedI as well as CursorMoved, so the line
+  -- you're typing stays put instead of marching down the screen.
+  vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+    group = group,
+    callback = function()
+      if vim.tbl_isempty(M.panes) then
+        return
+      end
+      M.centre_cursor()
     end,
   })
 
