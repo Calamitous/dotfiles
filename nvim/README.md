@@ -33,7 +33,11 @@ isn't. `q` closes it. Leader is **space**.
 | `<Leader>r` | `:Reload` | reload the config in place |
 
 `:Reload` re-runs the config without restarting. It cannot remove a keymap or
-command you deleted from a file — for that, restart.
+command you deleted from a file — for that, restart. Centred panes come back
+centred: the windows survive a reload, only the module that remembers them
+doesn't, so it notes which panes had margins, takes them off, and puts them
+back once the config has re-sourced (a pane that has since grown too narrow
+quietly declines).
 
 The search term is marked in the grep preview with a **background colour**
 (bold black on yellow) rather than grep's default bold red, which is thin and
@@ -500,6 +504,7 @@ there and the spellfile, harper's dictionary and the abbreviations all follow.
 
 ```
 cd ~/Writing/some-vault && scriptorium init    # or :VaultInit inside nvim
+scriptorium init ~/Writing/new-book           # makes the vault if there is none
 scriptorium init --dry-run                    # show what it would do
 ```
 
@@ -509,16 +514,48 @@ Installs, from `../vault-template/`:
 |---|---|
 | `.gitignore` | keeps the generated `.scriptorium/*.spl` and Obsidian's per-machine UI state out of git |
 | `.vale.ini`, `.vale/Prose/*.yml` | the prose rules |
-| `.scriptorium/Abbreviations.md` | per-vault abbreviations |
+| `.scriptorium/abbreviations.vim` | per-vault abbreviations |
 | `.scriptorium/dictionary.utf-8.add` | shared by vim's speller and harper-ls |
+| `.scriptorium/Scene.md` | the new-chapter template `:NewScene` copies |
+| `.scriptorium/Bookmarks.md` | the bookmark table |
 
 **Non-destructive.** An existing file is never overwritten — it's reported as
 kept. `.gitignore` is the one exception and is only appended to. Safe to re-run,
 including to pick up rules added to the template later.
 
+**A new vault** gets the directory and an empty `.obsidian/`, which is all
+Obsidian needs to adopt the folder and all this config looks for when it hunts
+upward for a vault root. Keep it directly under `~/Writing` or obsidian.nvim
+won't register it as a workspace — it warns if you don't. What it does *not*
+make is a Longform draft, so there's nothing to compile until an `Index.md`
+with a `longform:` block exists — `scriptorium draft` writes one (below). Bare
+`vault-init` without `--create` still refuses on a path that isn't a vault.
+
 Edit the templates in `dotfiles/vault-template/`; they're real files, not
 strings in a config, so a rule can be tested with `vale` directly before it goes
 out to a vault.
+
+### A new draft
+
+```
+scriptorium draft "Volume 3"                   makes ./Volume 3/Index.md
+scriptorium draft "Volume 3" Novels/V3         title and folder differ
+scriptorium draft --dry-run "Volume 3"         show what it would write
+```
+
+A draft is a folder with an `Index.md` whose frontmatter carries a `longform:`
+block — the title, where the scenes live, and the order they go in. That one
+file is the whole registration: Longform finds drafts by scanning frontmatter
+(its own `projects` map stays empty), and `compile.rb` looks for the nearest
+`Index.md` above the working directory. So nothing has to touch `.obsidian/`,
+and **Obsidian can stay open** — the file is new, so there's no cached copy of
+it to overwrite, which is the one thing `:NewScene` has to guard against.
+
+The `workflow:` name is copied from the vault's Longform settings when they can
+be read, which is what makes a new draft build to the same place as every other
+one. It writes no scenes: a fresh draft compiles to an empty manuscript until
+its `scenes:` list names something, via `:NewScene` or the Longform pane. And
+it refuses a folder that already has an `Index.md` rather than touching it.
 
 ## Prose linting
 
@@ -674,7 +711,8 @@ From a shell, via the `scriptorium` front end:
 
 | Command | Does |
 |---|---|
-| `scriptorium init` | set this vault up |
+| `scriptorium init [path]` | set this vault up, creating it if it doesn't exist |
+| `scriptorium draft <Title> [folder]` | start a new draft; folder defaults to the title |
 | `scriptorium compile` | build the manuscript |
 | `scriptorium check` | build without writing; diff against the current output |
 | `scriptorium steps` | the pipeline, and every step available |
@@ -682,9 +720,15 @@ From a shell, via the `scriptorium` front end:
 | `scriptorium select <Index.md>` | remember which draft to build |
 | `scriptorium docx` | build, and render a `.docx` |
 
-`compile.rb` and `vault-init` still work directly — `scriptorium` is a front door
-so there's one name to remember, not a replacement. nvim calls the underlying
-scripts, so both symlinks are still needed.
+A new book is the two in order: `init` for the vault, `draft` for the first
+draft inside it.
+
+`compile.rb`, `vault-init` and `draft-init` still work directly — `scriptorium`
+is a front door
+so there's one name to remember, not a replacement. nvim calls `compile.rb` and
+`vault-init` by name, so those two need their own symlinks in `~/.local/bin`;
+`draft-init` is only ever reached through `scriptorium`, which finds it beside
+itself, so it needs one only if you want to run it bare.
 
 **Modified buffers in the vault are written first.** `compile.rb` reads from
 disk, so without this an unsaved edit is simply absent from the build — and
@@ -768,7 +812,7 @@ wholesale on every write:
 longform:
   scenes: [...]          # Obsidian still drives this
 compile:
-  output: My Book.md
+  output: ../../Renders/My Book.md
   steps:
     - strip_frontmatter
     - remove_links
@@ -777,6 +821,25 @@ compile:
     - concatenate: "\n\n---\n\n"
     - msword_hrs
 ```
+
+### Where the manuscript goes
+
+First match wins:
+
+1. **`output:` in the `compile:` block.** Relative to the folder holding
+   `Index.md`; absolute paths and `~` work too.
+2. **Longform's own `write-to-note` target**, read out of its `data.json`. The
+   draft names its workflow in `longform:`, and `$1` is the title — so with no
+   configuration at all, this script and Obsidian land in the same place. That
+   wasn't true before: the two used to write to different files, which is why
+   `--check` sat there reporting `would write ...` instead of diffing anything.
+3. **`<draft folder>/<title>.md`.**
+
+`scriptorium steps` prints the resolved path and which of the three it came
+from. Two things it won't do: **create a directory** (a missing one is an error,
+on the grounds that it's likelier a typo in `output:` than a folder you wanted),
+and let the output land on one of the draft's own chapters. The `.docx` from
+`--docx` goes beside the markdown with the same basename.
 
 ### Scene steps vs document steps
 

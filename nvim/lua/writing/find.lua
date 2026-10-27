@@ -109,8 +109,18 @@ local function open_with(key)
   return "edit"
 end
 
+--- Step off a reading-mode margin before opening anything into it.
+--- Belt and braces: see reading.leave_pad for what it costs to skip this.
+local function ready_to_open()
+  local ok, reading = pcall(require, "writing.reading")
+  if ok then
+    reading.leave_pad()
+  end
+end
+
 local function on_files(lines, cwd)
   local cmd = open_with(table.remove(lines, 1))
+  ready_to_open()
   for _, rel in ipairs(lines) do
     if rel ~= "" then
       vim.cmd[cmd](vim.fn.fnameescape(cwd .. "/" .. rel))
@@ -120,6 +130,7 @@ end
 
 local function on_grep(lines, cwd)
   local cmd = open_with(table.remove(lines, 1))
+  ready_to_open()
   for _, entry in ipairs(lines) do
     local file, lnum, col = entry:match("^(.-):(%d+):(%d+):")
     if file then
@@ -253,6 +264,7 @@ function M.buffers()
 
   vim.ui.select(names, { prompt = "Buffers" }, function(choice)
     if choice then
+      ready_to_open()
       vim.cmd.edit(vim.fn.fnameescape(vim.fn.expand(choice)))
     end
   end)

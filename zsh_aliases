@@ -84,8 +84,8 @@ alias fix_time_drift="sudo systemctl restart systemd-timesyncd && sudo systemctl
 alias strip_extra_blank_lines="sed -i '/^$/N;/^\n$/D'"
 alias strip_trailing_whitespace="sed -i 's/[ \t]*$//'"
 # alias fshot="QT_SCALE_FACTOR=0.65 flameshot"
-alias bbas_claude="claude --resume 'BBAS'"
-alias taata_claude="claude --resume 'TAATA'"
+alias bbas_claude="cd ~/Writing/workshop/Claude/Claude\ Notebook\ Analyses && claude --resume 'BBAS'"
+alias taata_claude="cd ~/Writing/workshop/Claude/Claude\ Notebook\ Analyses && claude --resume 'TAATA'"
 alias mpv_sonatas="mpv http://ericbudd%40mount-olive%2Ecom:JDEkYlRJRFdmU24kMWlrcEhaeDRFNGZ6WnN2TExNdlg5Lg==@streams.calmradio.com:21814/stream"
 alias mpv_dvorak="mpv http://ericbudd%40mount-olive%2Ecom:JDEkYlRJRFdmU24kMWlrcEhaeDRFNGZ6WnN2TExNdlg5Lg==@streams.calmradio.com:10514/stream"
 alias mpv_piano_hymns="mpv http://ericbudd%40mount-olive%2Ecom:JDEkYlRJRFdmU24kMWlrcEhaeDRFNGZ6WnN2TExNdlg5Lg==@streams.calmradio.com:17256/stream"
@@ -119,5 +119,26 @@ mpv_play() {
   curl -s "${ND_URL}/rest/getPlaylist?id=${pid}&${auth}" \
     | jq -r '.["subsonic-response"].playlist.entry[]?.id' \
     | while read -r id; do print -- "${ND_URL}/rest/stream?id=${id}&${auth}"; done \
-    | mpv --no-video --playlist=/dev/stdin "$@"
+    | mpv --shuffle --no-video --playlist=/dev/stdin "$@"
 }
+
+# Quick tag overview for a dir (or a single file). Custom tags first, title truncated.
+# usage: tags [dir-or-file]
+tags() {
+  emulate -L zsh
+  local dir=${1:-.}
+  { print "AUD\tINSTR\tSEAS\tARTIST\tTITLE"
+    exiftool -q -m -f -T -ext mp3 -ext ogg -ext flac -ext m4a \
+      -Audience -Instrumental -Seasonal -Artist -Title "$dir" 2>/dev/null
+  } | awk -F'\t' 'NR==1{print;next}
+        {t=$5; if(length(t)>45)t=substr(t,1,42)"...";
+         a=$4; if(length(a)>20)a=substr(a,1,17)"...";
+         printf "%s\t%s\t%s\t%s\t%s\n",$1,$2,$3,a,t}' \
+    | column -t -s$'\t'
+}
+
+# Dump ALL tags for ONE file (the Picard-for-a-single-track view).
+# usage: tagf <file>
+tagf() { exiftool -a -G1 -s "${1:?usage: tagf <file>}"; }
+alias aa-xine="mplayer -vo aa"
+alias dedupe_this_dir="rmlint -p -S m"

@@ -77,6 +77,66 @@ function M.is_active(win)
   return M.panes[win] ~= nil
 end
 
+--- Close padding windows that no pane claims any more.
+---
+--- `disable` closes its own pads, so an orphan only happens when the module
+--- loses its state while the windows live on -- a reload that couldn't source
+--- the config, a hand-cleared `package.loaded`. Nothing will ever reclaim
+--- them, so two dead margins sit there until you quit. Sweep them the moment
+--- we trip over one.
+local function close_orphan_pads()
+  local dead = {}
+  for _, w in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    if M.is_pad(w) and not owner(w) then
+      table.insert(dead, w)
+    end
+  end
+  for _, w in ipairs(dead) do
+    pcall(vim.api.nvim_win_close, w, true)
+  end
+  return #dead
+end
+
+--- Step out of a padding window, before anything opens a file in it.
+---
+--- Pickers `:edit` into the current window, and the cursor can be sitting in a
+--- pad -- after a `:Reload` orphaned them, or a stray <C-w>h. Loading a real
+--- file there replaces the scratch buffer, which takes the `readingpad`
+--- filetype with it: `is_pad` can no longer recognise the window, the WinEnter
+--- guard can't rescue it, and `validate` sees the text pane still at M.width
+--- and leaves well alone. The result is a chapter in a margin-width window for
+--- the rest of the session, which is what "reading mode went narrow" meant.
+---
+--- @return boolean  whether it changed anything
+function M.leave_pad()
+  -- Dead margins first, and unconditionally: while any OTHER pane is still
+  -- centred the WinEnter guard is live, so it bounces the cursor out of an
+  -- orphan before we ever get here -- and then nothing would sweep it. Closing
+  -- a window the cursor is in moves the cursor, which the move below sorts out.
+  local swept = close_orphan_pads() > 0
+
+  local win = vim.api.nvim_get_current_win()
+  if not M.is_pad(win) then
+    return swept
+  end
+
+  local text = owner(win)
+  if text and vim.api.nvim_win_is_valid(text) then
+    vim.api.nvim_set_current_win(text)
+    return true
+  end
+
+  -- Still in a pad: an owned one, or an orphan the sweep above couldn't close.
+  -- Any real window will do.
+  for _, w in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    if not M.is_pad(w) and vim.api.nvim_win_get_config(w).relative == "" then
+      vim.api.nvim_set_current_win(w)
+      return true
+    end
+  end
+  return swept
+end
+
 --- Centre one pane. Defaults to the current window.
 --- @param quiet boolean|nil  suppress the "too narrow" message
 function M.enable(win, quiet)
@@ -268,7 +328,9 @@ function M.validate()
 end
 
 function M.disable_all()
-  for win in pairs(vim.deepcopy and M.panes or M.panes) do
+  -- Snapshot the keys: `disable` clears its own entry as it goes.
+  local wins = vim.tbl_keys(M.panes)
+  for _, win in ipairs(wins) do
     M.disable(win)
   end
   M.panes = {}

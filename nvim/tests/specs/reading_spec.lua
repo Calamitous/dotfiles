@@ -228,4 +228,87 @@ t.it("disable_all clears everything", function()
   t.eq(vim.tbl_count(reading.panes), 0)
 end)
 
+t.describe("reading mode: keeping files out of the margins")
+
+-- The bug this covers: a picker `:edit`s into whatever window has focus. If
+-- that's a padding window, the chapter loads at margin width -- and replacing
+-- the buffer takes the `readingpad` filetype with it, so afterwards nothing
+-- can tell the window was ever a pad and the narrow view sticks.
+-- While a pane is tracked you cannot even come to rest in its margin: the
+-- WinEnter guard moves you straight back out. So the reachable form of the bug
+-- is an ORPHANED pad, which is the next test.
+t.it("the WinEnter guard refuses to leave the cursor in a margin", function()
+  vim.o.columns = 220
+  open(1)
+  local text = vim.api.nvim_get_current_win()
+  t.ok(reading.enable(text), "centred")
+
+  vim.api.nvim_set_current_win(reading.panes[text].left)
+  t.ok(not reading.is_pad(vim.api.nvim_get_current_win()), "bounced out again")
+
+  vim.cmd("edit " .. V.root .. "/N/2.md")
+  t.eq(vim.api.nvim_win_get_width(0), reading.width, "the file opened at full width")
+  reading.disable_all()
+end)
+
+-- A dead condition in reload.lua checked `reading.state.active` for a while.
+-- It never existed, so `:Reload` orphaned the pads and silently disabled both
+-- of the guards above. Pin the name the state actually has.
+t.it("exposes its state as `panes`, which reload.lua checks", function()
+  t.eq(reading.state, nil, "there is no `state` table")
+  t.eq(type(reading.panes), "table")
+  t.eq(type(reading.disable_all), "function")
+end)
+
+t.it("stays put when the cursor is already in a real window", function()
+  vim.o.columns = 220
+  open(1)
+  reading.enable()
+  local win = vim.api.nvim_get_current_win()
+  t.eq(reading.leave_pad(), false, "no move needed")
+  t.eq(vim.api.nvim_get_current_win(), win)
+  reading.disable_all()
+end)
+
+t.it("escapes a pad whose pane is no longer tracked", function()
+  vim.o.columns = 220
+  open(1)
+  local text = vim.api.nvim_get_current_win()
+  reading.enable(text)
+  local pad = reading.panes[text].left
+
+  -- What a `:Reload` used to leave behind: pads on screen, panes forgotten.
+  reading.panes = {}
+  vim.api.nvim_set_current_win(pad)
+
+  t.ok(reading.leave_pad(), "found somewhere real to go")
+  t.ok(not reading.is_pad(vim.api.nvim_get_current_win()), "out of the margin")
+
+  -- And the dead margins go with it. Nothing owns them any more, so nothing
+  -- would ever have closed them; they'd sit there until the session ended.
+  local _, pad = layout()
+  t.eq(#pad, 0, "swept the orphans")
+end)
+
+t.it("keeps the margins of panes that are still tracked", function()
+  vim.o.columns = 300
+  open(2)
+  local wins = vim.api.nvim_tabpage_list_wins(0)
+  reading.enable(wins[1])
+  reading.enable(wins[2])
+
+  -- Orphan ONE pane's pads. The other pane is still centred, so the WinEnter
+  -- guard is live and won't let the cursor rest in the orphan at all -- the
+  -- sweep has to happen anyway, and must take only the two dead margins.
+  local orphan = reading.panes[wins[1]]
+  reading.panes[wins[1]] = nil
+  vim.api.nvim_set_current_win(orphan.left)
+
+  t.ok(reading.leave_pad(), "swept")
+  local _, pad = layout()
+  t.eq(#pad, 2, "only the orphans were closed")
+  t.ok(reading.is_active(wins[2]), "the live pane is untouched")
+  reading.disable_all()
+end)
+
 V.destroy()

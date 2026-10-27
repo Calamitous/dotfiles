@@ -1,0 +1,132 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# draft-init -- start a new Longform draft.
+#
+#   draft-init "Volume 3"              makes ./Volume 3/Index.md
+#   draft-init "Volume 3" Novels/V3    when the title and the folder differ
+#   draft-init --dry-run "Volume 3"    show what would happen, change nothing
+#
+# A draft is a folder with an Index.md whose frontmatter carries a `longform:`
+# block: the title, where the scenes live, and the order they go in. That one
+# file is the whole registration -- Longform discovers drafts by scanning
+# frontmatter (its `projects` map in data.json stays empty), and compile.rb
+# finds the nearest Index.md above the working directory. So nothing here has
+# to touch .obsidian/, and Obsidian can be left running: the file is new, so
+# there is no cached copy of it to overwrite.
+#
+# The workflow name is copied from the vault's Longform settings when it can be
+# read, which is what makes the new draft compile to the same place as every
+# other one -- see WHERE THE MANUSCRIPT GOES in compile.rb.
+#
+# NON-DESTRUCTIVE. It refuses a folder that already has an Index.md rather than
+# touching it. It creates the draft folder, and nothing else.
+#
+# It does NOT create any scenes. A new draft compiles to an empty manuscript
+# until its `scenes:` list has something in it (`:NewScene` in nvim, or the
+# Longform pane in Obsidian).
+
+require 'fileutils'
+require 'json'
+require 'optparse'
+require 'yaml'
+
+options = { dry_run: false }
+parser = OptionParser.new do |o|
+  o.banner = 'Usage: draft-init [--dry-run] <Title> [folder]'
+  o.on('-n', '--dry-run', 'Show what would happen; change nothing') { options[:dry_run] = true }
+  o.on('-h', '--help') { puts o; exit }
+end
+parser.parse!
+
+# Same upward hunt for `.obsidian` as vault-init and compile.rb. Deliberately
+# copied rather than shared: these scripts stay runnable one at a time.
+def vault_root(from)
+  dir = File.expand_path(from)
+  loop do
+    return dir if Dir.exist?(File.join(dir, '.obsidian'))
+
+    parent = File.dirname(dir)
+    return nil if parent == dir
+
+    dir = parent
+  end
+end
+
+# Longform's workflow names, so the new draft can name one the vault actually
+# has. Prefers the stock name, accepts a sole custom one, gives up quietly.
+def workflow_for(vault)
+  data = File.join(vault, '.obsidian', 'plugins', 'longform', 'data.json')
+  return nil unless File.file?(data)
+
+  flows = JSON.parse(File.read(data))['workflows']
+  return nil unless flows.is_a?(Hash) && !flows.empty?
+
+  return 'Default Workflow' if flows.key?('Default Workflow')
+
+  flows.keys.first if flows.size == 1
+rescue JSON::ParserError
+  nil
+end
+
+title = ARGV[0]
+if title.nil? || title.strip.empty?
+  warn 'draft-init: a draft needs a title'
+  warn parser.banner
+  exit 1
+end
+
+dir = File.expand_path(ARGV[1] || title, Dir.pwd)
+index = File.join(dir, 'Index.md')
+
+vault = vault_root(dir)
+unless vault
+  warn "draft-init: #{dir} is not inside an Obsidian vault"
+  warn '            run `scriptorium init` on the vault first.'
+  exit 1
+end
+
+if File.exist?(index)
+  warn "draft-init: #{index} already exists -- that folder is already a draft"
+  exit 1
+end
+
+workflow = workflow_for(vault)
+front = { 'format' => 'scenes', 'title' => title }
+front['workflow'] = workflow if workflow
+front.merge!('sceneFolder' => '/', 'scenes' => [], 'ignoredFiles' => [])
+
+# Psych handles the quoting, which matters: titles here carry commas and
+# ampersands, and `title: No: really` is not the YAML you meant.
+body = "#{YAML.dump('longform' => front)}---\n"
+
+relative = index.start_with?("#{vault}/") ? index.sub("#{vault}/", '') : index
+
+puts "Vault: #{vault}"
+puts '(dry run -- nothing will be written)' if options[:dry_run]
+puts
+
+if options[:dry_run]
+  puts "  would create   #{relative}"
+else
+  FileUtils.mkdir_p(dir)
+  File.write(index, body)
+  puts "  create   #{relative}"
+end
+
+puts
+puts "Draft \"#{title}\"#{workflow ? ", workflow: #{workflow}" : ''}"
+puts
+puts body.lines.map { |l| "  #{l}" }.join
+puts
+
+loose = Dir.glob('*.md', base: dir).reject { |f| f == 'Index.md' }.sort
+unless loose.empty?
+  puts "Note: #{loose.length} other .md file#{'s' if loose.length != 1} in that folder "\
+       'are not scenes yet --'
+  puts '      a draft compiles only what its `scenes:` list names.'
+  puts
+end
+
+puts 'Next: add scenes (`:NewScene` in nvim, or the Longform pane in Obsidian),'
+puts "      then `scriptorium steps` from inside the draft to see where it builds."

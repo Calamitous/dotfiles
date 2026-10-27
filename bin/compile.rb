@@ -33,7 +33,7 @@
 # write and would destroy anything under it):
 #
 #   compile:
-#     output: Brass, Bone, & Steel Volume 1.md
+#     output: ../../Renders/Volume 1.md
 #     steps:
 #       - strip_frontmatter
 #       - remove_links
@@ -44,6 +44,18 @@
 #
 # A vault may define extra steps in <vault>/bin/compile_steps.rb; they're
 # loaded automatically and can be referenced by name in the steps list.
+#
+# WHERE THE MANUSCRIPT GOES. First match wins:
+#
+#   1. `output:` in the draft's `compile:` block. Relative to the draft folder;
+#      absolute paths and `~` work too. The directory must already exist --
+#      this script won't create folders in your vault.
+#   2. the target of Longform's own write-to-note step, read from its
+#      data.json, so both tools land in the same place by default. The draft
+#      names its workflow in `longform:`; `$1` is the title.
+#   3. <draft folder>/<title>.md.
+#
+# `--steps` prints the resolved path and which of the three it came from.
 
 require 'set'
 require 'yaml'
@@ -187,6 +199,7 @@ module Compile
       @title = longform['title'] || File.basename(@dir)
       @scenes = Array(longform['scenes']).flatten.compact
       @scene_folder = longform['sceneFolder']
+      @workflow = longform['workflow']
       @config = front['compile'] || {}
     end
 
@@ -214,8 +227,27 @@ module Compile
       @config['steps'] || DEFAULT_STEPS
     end
 
+    # Where the manuscript lands. The draft's own `output:` wins; failing that,
+    # wherever Longform would have put it, so both tools agree with no
+    # configuration at all; failing that, the title.
+    #
+    # expand_path, not File.join: `File.join(dir, '/tmp/x.md')` quietly yields
+    # "#{dir}/tmp/x.md" rather than the absolute path, and nothing expands `~`.
+    # Relative values stay relative to the draft folder, as they always were.
     def output
-      File.join(@dir, @config['output'] || "#{@title}.md")
+      File.expand_path(@config['output'] || longform_output || "#{@title}.md", @dir)
+    end
+
+    # The target of Longform's own write-to-note step. `$1` is the draft title,
+    # and Longform appends `.md` itself -- so a target without the extension is
+    # a note name, not a filename. Returns nil if anything is missing; this is
+    # a default, and a vault with no Longform settings is not an error.
+    def longform_output
+      vault = Compile.vault_root(@dir) or return nil
+      target = Compile.longform_target(vault, @workflow) or return nil
+
+      target = target.gsub('$1', @title)
+      target.end_with?('.md') ? target : "#{target}.md"
     end
 
     def missing
@@ -380,6 +412,41 @@ module Compile
     nil
   end
 
+  # Where Longform's write-to-note step sends the compiled manuscript. Read as
+  # the default output path so this script and Obsidian agree without the draft
+  # having to say so twice. Never written.
+  #
+  # `workflow` is the name the draft records in its own `longform:` block.
+  def longform_target(vault, workflow = nil)
+    data = File.join(vault, '.obsidian', 'plugins', 'longform', 'data.json')
+    return nil unless File.file?(data)
+
+    flows = JSON.parse(File.read(data))['workflows']
+    return nil unless flows.is_a?(Hash) && !flows.empty?
+
+    # The draft's own workflow, then Longform's default name, then the only one
+    # there is. Guessing between several unnamed ones would be worse than nil.
+    flow = flows[workflow] || flows['Default Workflow'] || (flows.values.first if flows.size == 1)
+    return nil unless flow.is_a?(Hash)
+
+    # Last write-to-note wins, matching the way the pipeline runs.
+    step = Array(flow['steps']).reverse.find { |s| s.is_a?(Hash) && s['id'] == 'write-to-note' }
+    return nil unless step.is_a?(Hash) && step['optionValues'].is_a?(Hash)
+
+    step['optionValues']['target']
+  rescue JSON::ParserError
+    nil
+  end
+
+  # Output can live anywhere now, so a bare basename would hide where a build
+  # actually went. Inside the vault, show the vault-relative path; outside it,
+  # show the lot.
+  def relative(path, vault)
+    return path unless vault && path.start_with?("#{vault}#{File::SEPARATOR}")
+
+    path.sub("#{vault}#{File::SEPARATOR}", '')
+  end
+
   # nvim's own selection wins when set; it's a file this tool owns.
   def selection_file(vault)
     File.join(vault, '.compile-draft')
@@ -489,6 +556,16 @@ begin
     join_at = names.index { |n| Compile::Steps::STEP_KINDS[n] == [:join] }
     puts "#{draft.title}  (#{Compile.commas(draft.scenes.length)} scenes)"
     puts "  source: #{File.basename(draft.path)}#{draft.config.empty? ? '  [built-in defaults]' : ''}"
+    # Say where the path came from: a wrong output is easier to spot than to
+    # explain, and this is the command you run to check a build before making it.
+    origin = if draft.config['output']
+               '  [compile: output:]'
+             elsif draft.longform_output
+               "  [Longform's write-to-note]"
+             else
+               '  [draft title]'
+             end
+    puts "  output: #{Compile.relative(draft.output, vault)}#{origin}"
     puts
     names.each_with_index do |name, i|
       kind = i == join_at ? 'join    ' : (i < join_at ? 'scene   ' : 'document')
@@ -539,16 +616,37 @@ begin
 
   text = runner.run
   target = draft.output
+  shown = Compile.relative(target, vault)
+
+  # A mistyped `output:` that lands on a chapter would compile the book over one
+  # of its own sources. Cheap to rule out, and unrecoverable if it happens.
+  if draft.scenes.any? { |s| draft.scene_path(s) == target }
+    raise Compile::Error, "`output:` points at a scene file (#{shown}) -- that would overwrite a chapter"
+  end
+
+  warn 'compile.rb: --docx does nothing with --check' if options[:docx] && !options[:write]
 
   words = text.split(/\s+/).length
 
   if options[:write]
+    # No mkdir: a missing directory is likelier to be a typo in `output:` than
+    # a folder this script should be creating in someone's vault.
+    dir = File.dirname(target)
+    unless Dir.exist?(dir)
+      raise Compile::Error,
+            "no such directory: #{Compile.relative(dir, vault)} -- " \
+            "create it, or fix `output:` in #{File.basename(draft.path)}"
+    end
+
     File.write(target, text)
-    puts format('%s -> %s', draft.title, File.basename(target))
+    puts format('%s -> %s', draft.title, shown)
     puts format('  %s scenes, %s words', Compile.commas(draft.scenes.length), Compile.commas(words))
 
     if options[:docx]
-      docx = target.sub(/\.md\z/, '.docx')
+      # basename(target, '.md') rather than sub(/\.md\z/): an `output:` with no
+      # .md suffix would otherwise leave the path unchanged, and pandoc would
+      # write the .docx over the markdown it was reading.
+      docx = File.join(dir, "#{File.basename(target, '.md')}.docx")
       system('pandoc', '-f', 'markdown', '-o', docx, target) or raise Compile::Error, 'pandoc failed'
       puts "  #{File.basename(docx)}"
     end
@@ -559,14 +657,14 @@ begin
         f.write(text)
         f.flush
         if system('diff', '-q', target, f.path, out: File::NULL)
-          puts "IDENTICAL to #{File.basename(target)} (#{Compile.commas(words)} words)"
+          puts "IDENTICAL to #{shown} (#{Compile.commas(words)} words)"
         else
-          puts "DIFFERS from #{File.basename(target)}"
+          puts "DIFFERS from #{shown}"
           system('diff', target, f.path)
         end
       end
     else
-      puts "would write #{File.basename(target)} (#{Compile.commas(words)} words)"
+      puts "would write #{shown} (#{Compile.commas(words)} words)"
     end
   end
 rescue Compile::Error => e

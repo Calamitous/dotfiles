@@ -1,16 +1,26 @@
 #!/bin/sh
 # scriptorium -- one entry point for the writing tools.
 #
-#   scriptorium init [path]     set a vault up (rules, dictionary, .gitignore)
+#   scriptorium init [path]     set a vault up (rules, dictionary, .gitignore),
+#                               creating it first if there's no vault there yet
+#   scriptorium draft <Title> [folder]
+#                               start a new draft (an Index.md Longform and
+#                               compile.rb both read); folder defaults to Title
 #   scriptorium compile         build the manuscript
 #   scriptorium check           build without writing; diff against the current
-#   scriptorium steps           show the compile pipeline and every step
+#   scriptorium steps           show the pipeline, and where the build will land
 #   scriptorium drafts          list the drafts in this vault
 #   scriptorium select <Index>  remember which draft to build
 #   scriptorium docx            build, and render a .docx via pandoc
 #
-# The individual scripts (vault-init, compile.rb) still work directly; this is
-# just a front door so there's one name to remember.
+# The individual scripts (vault-init, draft-init, compile.rb) still work
+# directly; this is just a front door so there's one name to remember. `init` is
+# the one place they differ: it passes --create, so
+# `scriptorium init ~/Writing/new-book` makes the vault, while bare `vault-init`
+# still expects one to exist.
+#
+# A new book is the two in order: `init` for the vault, `draft` for the first
+# draft inside it.
 
 set -e
 
@@ -28,7 +38,10 @@ done
 BIN=$(cd -P "$(dirname "$src")" && pwd)
 
 usage() {
-  sed -n '3,14p' "$src" | sed 's/^# \{0,1\}//'
+  # The header comment IS the help text: everything from the title line down to
+  # the first line of code. Printed by shape rather than by line number, so
+  # adding a command above can't silently truncate it.
+  awk 'NR < 3 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$src"
   exit "${1:-0}"
 }
 
@@ -46,7 +59,13 @@ cmd=${1:-}
 case "$cmd" in
   init)
     [ -x "$BIN/vault-init" ] || { echo "scriptorium: vault-init not found" >&2; exit 1; }
-    exec "$BIN/vault-init" "$@"
+    # --create so this works on a path that isn't a vault yet; it's a no-op
+    # when there already is one above the target.
+    exec "$BIN/vault-init" --create "$@"
+    ;;
+  draft|new)
+    [ -x "$BIN/draft-init" ] || { echo "scriptorium: draft-init not found" >&2; exit 1; }
+    exec "$BIN/draft-init" "$@"
     ;;
   compile|build) compile "$@" ;;
   check)         compile --check "$@" ;;

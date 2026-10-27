@@ -6,14 +6,25 @@
 #   cd ~/Writing/some-vault && vault-init
 #   vault-init ~/Writing/some-vault
 #   vault-init --dry-run          show what would happen, change nothing
+#   vault-init --create ~/Writing/new-book    make the vault, then set it up
 #
 # Installs, from dotfiles/vault-template:
 #
 #   .gitignore                    (missing lines appended, never overwritten)
 #   .vale.ini                     vale config, custom rules only
 #   .vale/Prose/*.yml             the prose rules
-#   .scriptorium/Abbreviations.md      per-vault abbreviations, seeded empty
+#   .scriptorium/abbreviations.vim     per-vault abbreviations
 #   .scriptorium/dictionary.utf-8.add  shared by vim's speller and harper-ls
+#   .scriptorium/Scene.md              the new-chapter template (:NewScene)
+#   .scriptorium/Bookmarks.md          the bookmark table
+#
+# Without --create it needs an existing vault: it walks up for a .obsidian
+# directory and stops if there isn't one. With --create, and a path that has no
+# vault above it, it makes the directory and an empty .obsidian/ first -- which
+# is all Obsidian needs to adopt the folder, and all this toolchain looks for.
+#
+# It does NOT create a Longform draft. A new vault has nothing to compile until
+# there's an Index.md with a `longform:` block in it.
 #
 # NON-DESTRUCTIVE. An existing file is never overwritten -- it's reported as
 # kept. .gitignore is the one exception and is only ever appended to. Safe to
@@ -25,10 +36,11 @@ require 'optparse'
 
 TEMPLATE = File.expand_path('../vault-template', __dir__)
 
-options = { dry_run: false }
+options = { dry_run: false, create: false }
 OptionParser.new do |o|
-  o.banner = 'Usage: vault-init [--dry-run] [vault path]'
+  o.banner = 'Usage: vault-init [--dry-run] [--create] [vault path]'
   o.on('-n', '--dry-run', 'Show what would happen; change nothing') { options[:dry_run] = true }
+  o.on('-c', '--create', 'Make the vault (and its .obsidian/) if there is none') { options[:create] = true }
   o.on('-h', '--help') { puts o; exit }
 end.parse!
 
@@ -44,9 +56,35 @@ def vault_root(from)
   end
 end
 
-root = vault_root(ARGV[0] || Dir.pwd)
+target = ARGV[0] || Dir.pwd
+root = vault_root(target)
+
+# A new vault. An empty .obsidian/ is enough: Obsidian fills it in the first
+# time it opens the folder, and `.obsidian`'s mere existence is what every part
+# of this toolchain looks for when it hunts upward for a vault root.
+if root.nil? && options[:create]
+  root = File.expand_path(target)
+  writing = File.expand_path('~/Writing')
+
+  # obsidian.nvim only registers workspaces one level under ~/Writing, so a
+  # vault anywhere else works in this toolchain but won't get the Obsidian LSP.
+  unless File.dirname(root) == writing
+    warn "vault-init: #{root} is not directly under #{writing} --"
+    warn '            obsidian.nvim will not register it as a workspace.'
+  end
+
+  if options[:dry_run]
+    puts "would create #{root}/ and #{root}/.obsidian/"
+  else
+    FileUtils.mkdir_p(File.join(root, '.obsidian'))
+    puts "created  #{root}/.obsidian/"
+  end
+  puts
+end
+
 unless root
-  warn "vault-init: no .obsidian directory found at or above #{ARGV[0] || Dir.pwd}"
+  warn "vault-init: no .obsidian directory found at or above #{target}"
+  warn '            pass --create to make a new vault there.'
   exit 1
 end
 

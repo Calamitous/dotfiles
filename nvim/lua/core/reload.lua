@@ -26,10 +26,23 @@ end
 
 function M.reload()
   -- Tear down anything holding windows before its module disappears, or the
-  -- reading-mode padding windows would be orphaned.
+  -- reading-mode padding windows get orphaned: the fresh module starts with an
+  -- empty `panes`, and both of its safety autocmds bail early when that's
+  -- empty, so nothing re-measures the widths and nothing steps the cursor back
+  -- off a pad. The next file you opened would then load INTO a padding window,
+  -- at pad width -- which is where "reading mode went narrow" came from.
+  --
+  -- This checked `reading.state.active` for a while, which never existed; the
+  -- state is `panes`, keyed by window.
+  --
+  -- Which panes WERE centred is worth keeping: a reload doesn't touch the
+  -- windows themselves, only the module that remembers them, so the handles
+  -- are still valid on the other side and the margins can simply go back.
+  local centred = {}
   local ok, reading = pcall(require, "writing.reading")
-  if ok and reading.state and reading.state.active then
-    reading.disable()
+  if ok and type(reading.panes) == "table" and next(reading.panes) then
+    centred = vim.tbl_keys(reading.panes)
+    reading.disable_all()
   end
 
   local cleared = 0
@@ -63,7 +76,30 @@ function M.reload()
     end
   end
 
-  vim.notify(string.format("Config reloaded — %d modules, %d buffers", cleared, buffers))
+  -- Re-centre last. The FileType pass above re-runs the ftplugins, which set
+  -- window-local options of their own; centring afterwards means reading mode's
+  -- settings win, and the originals it squirrels away to restore on toggle-off
+  -- are the ones the ftplugins just established. `enable` is quiet here so a
+  -- layout that has since grown too narrow declines instead of scolding you,
+  -- and the fresh module is a NEW table -- the one captured above went with
+  -- `package.loaded`.
+  local panes = 0
+  if #centred > 0 then
+    local fresh
+    ok, fresh = pcall(require, "writing.reading")
+    for _, win in ipairs(ok and centred or {}) do
+      if vim.api.nvim_win_is_valid(win) and fresh.enable(win, true) then
+        panes = panes + 1
+      end
+    end
+  end
+
+  vim.notify(string.format(
+    "Config reloaded — %d modules, %d buffers%s",
+    cleared,
+    buffers,
+    panes > 0 and string.format(", %d re-centred", panes) or ""
+  ))
 end
 
 function M.setup()

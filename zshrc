@@ -53,8 +53,6 @@ export PATH=$PATH:$GOPATH/bin
 # export PATH=$PATH:$GOROOT/bin
 export PATH="$PATH:/usr/local/protobuf/bin"
 
-# . "$HOME/.asdf/asdf.sh"
-
 # append completions to fpath
 fpath=(${ASDF_DIR}/completions $fpath)
 
@@ -77,7 +75,6 @@ zstyle ':completion:*' matcher-list '' 'm:{[:lower:][:upper:]}={[:upper:][:lower
 
 # Initialize the autocompletion
 # export FZF_DEFAULT_COMMAND='rg --files --no-ignore --hidden --follow --glob "!.git/*"'
-# . $HOME/.asdf/asdf.sh
 # append completions to fpath
 # fpath=(${ASDF_DIR}/completions $fpath)
 # initialise completions with ZSH's compinit
@@ -108,14 +105,8 @@ if [[ $#h -gt 0 ]]; then
   zstyle ':completion:*:ssh:*' hosts $h
   zstyle ':completion:*:slogin:*' hosts $h
 fi
-. /opt/asdf-vm/asdf.sh
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-# grok
-# export PATH=/home/eric/.grok/bin:$PATH
+export PATH="${ASDF_DATA_DIR:-$HOME/.asdf}/shims:$PATH"
 
 # Recursively tag every audio file under a directory with a custom tag.
 # usage: tagdir <tag> <value> [dir]   (dir defaults to the current directory)
