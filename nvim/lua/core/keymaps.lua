@@ -146,6 +146,7 @@ map("n", "<Leader>ml", "<Cmd>CompileList<CR>", { desc = "List drafts" })
 map("n", "<Leader>ms", "<Cmd>CompileSteps<CR>", { desc = "Show compile pipeline" })
 map("n", "<Leader>mn", "<Cmd>NewScene<CR>", { desc = "New chapter from template" })
 map("n", "<Leader>mr", "<Cmd>Rename<CR>", { desc = "Rename note (+ draft, in a scene)" })
+map("n", "<Leader>mt", "<Cmd>NewFromTemplate<CR>", { desc = "New note from a vault template" })
 
 -- Checkboxes
 map("n", "<Leader>l", "<Cmd>CheckboxToggle<CR>", { desc = "Toggle checkbox" })

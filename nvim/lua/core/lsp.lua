@@ -30,7 +30,15 @@ M.linters = {
   SpelledNumbers = false, -- style choice
   BoringWords = false, -- not its call
   Dashes = false, -- em/en dash use is deliberate
+  UseEllipsisCharacter = false, -- "..." stays three periods; see below
 }
+
+-- A note on UseEllipsisCharacter, since it's the one most likely to be wanted
+-- back: harper replaces "..." with the single character U+2026. Manuscripts go
+-- out as three periods -- Word, pandoc and most house styles all expect them,
+-- and a lone U+2026 can't be spaced or kerned the way a trailing ellipsis in
+-- dialogue needs. Its sibling `EllipsisLength` (wrong number of dots) is still
+-- on, which is the half of the check that catches real typos.
 
 function M.setup()
   if vim.fn.executable("harper-ls") ~= 1 then

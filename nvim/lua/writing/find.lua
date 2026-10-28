@@ -36,7 +36,9 @@ end
 M.match_highlight = "1;30;43"
 
 --- fzf's own matcher: -i forces case-insensitive, +i forces case-sensitive.
-local function fzf_case()
+--- Exported so other pickers (writing.template) match this one's behaviour
+--- rather than keeping their own copy of the setting.
+function M.fzf_case()
   return M.ignore_case and "-i" or "+i"
 end
 
@@ -63,7 +65,11 @@ local function float(title)
 end
 
 --- Run an fzf pipeline in a float; hand the selected lines to `handler`.
-local function run(cmd, cwd, title, handler)
+---
+--- Exported for writing.template, which needs the same float and the same
+--- abort handling but a different pipeline. `handler` receives the lines fzf
+--- printed, plus `cwd`; with --expect, the key pressed is the first line.
+function M.run(cmd, cwd, title, handler)
   local outfile = vim.fn.tempname()
   local buf, win = float(title)
 
@@ -152,21 +158,21 @@ function M.files(dir)
   local source = vim.fn.executable("rg") == 1 and "rg --files" or "find . -type f"
   local cmd = table.concat({
     source,
-    "| fzf --multi --exit-0 " .. fzf_case(),
+    "| fzf --multi --exit-0 " .. M.fzf_case(),
     "--expect=" .. EXPECT,
     "--prompt='Files> '",
     "--preview 'head -n 300 {}'",
     "--preview-window=right:55%:wrap",
   }, " ")
 
-  run(cmd, cwd, vim.fs.basename(cwd) .. " — files", on_files)
+  M.run(cmd, cwd, vim.fs.basename(cwd) .. " — files", on_files)
 end
 
 --- The fzf invocation for the grep picker. Split out so the flags can be
 --- asserted in a spec -- the picker itself is interactive and can't be.
 function M.grep_command()
   return table.concat({
-    "fzf --ansi --disabled --multi --exit-0 " .. fzf_case(),
+    "fzf --ansi --disabled --multi --exit-0 " .. M.fzf_case(),
     "--expect=" .. EXPECT,
     "--prompt='Grep> '",
     "--delimiter=:",
@@ -188,7 +194,7 @@ end
 --- Live-grep the vault contents. <Leader>/
 function M.grep(dir)
   local cwd = dir or root()
-  run(M.grep_command(), cwd, vim.fs.basename(cwd) .. " — grep", on_grep)
+  M.run(M.grep_command(), cwd, vim.fs.basename(cwd) .. " — grep", on_grep)
 end
 
 --- Fuzzy-find within this nvim config. <Leader>,

@@ -654,9 +654,22 @@ word added while writing is known to the spell checker and the grammar checker
 both. Adding the existing BBaS dictionary dropped its diagnostics on one
 chapter from 119 to 77.
 
-Linters are tuned for fiction in `lua/core/lsp.lua` — `SentenceCapitalization`
-and `LongSentences` are off, because dialogue is full of fragments and sentence
-length is a choice.
+Linters are tuned for fiction in `M.linters` (`lua/core/lsp.lua`) — a flat table
+of harper's rule names, each `true` or `false`. `SentenceCapitalization` and
+`LongSentences` are off because dialogue is full of fragments and sentence length
+is a choice; `SpelledNumbers`, `BoringWords` and `Dashes` because they're style,
+not error. **To silence any other rule, add its name with `false`** — the names
+are harper's own, and `strings $(command -v harper-ls) | grep -i <word>` will
+find one when the diagnostic doesn't say it.
+
+`UseEllipsisCharacter` is off: harper replaces `...` with the single character
+U+2026, and manuscripts go out as three periods, which is what Word, pandoc and
+most house styles expect. Its sibling `EllipsisLength` (the wrong *number* of
+dots) stays on, which is the half of that check that catches real typos.
+
+Per-rule settings are global here, not per-vault — harper-ls takes them over
+LSP at startup. A one-off is `<Leader>x` (`:HarperIgnore`) on the diagnostic
+itself, which travels with the vault.
 
 **Vale** (style) runs on demand, with **your** rules and no shipped styles.
 
@@ -734,6 +747,7 @@ freshly generated build of BBaS Vol 1 (11,846 lines, 136,525 words).
 | `<Leader>ml` | `:CompileList` | drafts in this vault (`*` = selected) |
 | `<Leader>ms` | `:CompileSteps` | show the pipeline and every available step |
 | `<Leader>mn` | `:NewScene` | **new chapter from a template, added to the draft** |
+| `<Leader>mt` | `:NewFromTemplate` | new note from one of the vault's templates |
 | `<Leader>mr` | `:Rename` | same as `<F2>` |
 
 From a shell, via the `scriptorium` front end:
@@ -798,6 +812,44 @@ exists and `compile.rb` would report a missing scene.
 
 Anything else — a note outside a draft, or an unlisted file sitting in the draft
 folder — gets an ordinary rename with its wikilinks rewritten.
+
+### A note from a template
+
+`<Leader>mt` (`:NewFromTemplate`) picks from **the vault's own template
+library** — the folder Obsidian's core Templates plugin uses — then asks for a
+name and opens the new note. `:Templates` browses the library itself.
+
+The folder comes from `<vault>/.obsidian/templates.json` rather than a hardcoded
+name, read-only, the same stance `compile.rb` takes toward `.obsidian/`. Every
+vault here says `Z. Templates`, which is the fallback when that file is missing,
+unreadable, or sets `folder` to `""` — Obsidian's way of saying "the vault
+root", which would offer every note in the book as a template. Only `*.md` is
+offered, because Longform keeps its compile scripts (`Longform Scripts/*.js`) in
+the same folder; subfolders are searched and kept in the name, since
+`Worldbuilding/` is half of what tells you which character template you're
+looking at.
+
+The prompt starts at **the folder of the buffer you're in** — you're usually
+already somewhere under `Characters/` when you reach for a character sheet — and
+whatever comes back is read from the vault root, so typing over it goes where it
+reads. `.md` is added if you leave it off, a missing parent folder is created
+(as with `:NewScene`), and an existing note is never overwritten.
+
+`{{title}}`, `{{date}}` and `{{time}}` are substituted, so a template written
+here still behaves in Obsidian. Anything else in braces is left exactly as it
+is: a Templater expression isn't ours to rewrite. Nothing currently in any vault
+uses a placeholder at all, so most templates copy through byte-identical.
+
+**It does not touch `Index.md`.** That's the line between this and `:NewScene`:
+a character sheet is not a chapter, so there's no scene list to append to and
+nothing for Obsidian's cached copy to clobber. Use `<Leader>mn` for prose.
+
+Obsidian's own `new_from_template` (obsidian.nvim) isn't wired up instead for
+three reasons: it reads `opts.templates.folder` and ignores `templates.json`; it
+takes the last whitespace-separated token as the template name, so
+`Character Template (Main)` parses as `(Main)`; and with no arguments it needs a
+picker backend (telescope, fzf-lua, mini.pick or snacks), none of which are
+installed.
 
 The decision is `scene.plan()`, a pure function with no IO, so all four cases are
 covered by specs; only the LSP rename itself is left to obsidian.nvim. The
