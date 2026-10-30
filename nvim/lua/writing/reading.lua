@@ -135,8 +135,9 @@ function M.centre_cursor(win)
   end
 
   -- Normal and insert only. In visual or operator-pending a `:normal!` would
-  -- interfere with the selection or the pending operator; `:normal!` does keep
-  -- insert mode when it runs from an autocommand, so typing is fine.
+  -- interfere with the selection or the pending operator. Insert mode survives
+  -- a `:normal!` run from an autocommand -- but the cursor COLUMN does not, on
+  -- its own; see the 'virtualedit' dance below.
   local mode = vim.api.nvim_get_mode().mode
   if mode ~= "n" and mode:sub(1, 1) ~= "i" then
     return false
@@ -152,7 +153,16 @@ function M.centre_cursor(win)
   local keys = row > want and ("%d\x05"):format(row - want) or ("%d\x19"):format(want - row)
 
   centring = true
+  -- `:normal!` runs these keys under normal-mode rules, and normal mode will
+  -- not leave the cursor past the last character of a line. In insert mode it
+  -- legitimately IS past it -- that is what `A` does -- so the scroll dragged
+  -- the cursor back a column and the next letter typed landed before the final
+  -- one. 'onemore' is the exemption for exactly that, held only for the two
+  -- keys below. Restoring it afterwards does not re-clamp the cursor.
+  local ve = vim.wo.virtualedit
+  vim.wo.virtualedit = "onemore"
   pcall(vim.cmd, "normal! " .. keys)
+  vim.wo.virtualedit = ve
   centring = false
   return true
 end

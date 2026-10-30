@@ -487,4 +487,86 @@ t.it("ignores panes it isn't centring", function()
   reading.disable_all()
 end)
 
+t.it("leaves 'virtualedit' exactly as it found it", function()
+  vim.o.columns = 220
+  open_long()
+  local win = vim.api.nvim_get_current_win()
+  reading.enable(win)
+  vim.cmd("normal! G")
+
+  vim.wo[win].virtualedit = "block"
+  t.ok(reading.centre_cursor(win), "scrolled")
+  t.eq(vim.wo[win].virtualedit, "block", "restored after the scroll")
+
+  vim.wo[win].virtualedit = ""
+  vim.cmd("normal! gg")
+  reading.centre_cursor(win)
+  t.eq(vim.wo[win].virtualedit, "", "and restored when it was unset")
+  reading.disable_all()
+end)
+
+-- The regression this guards is `A` appending before the last letter instead of
+-- after it: the platen's `:normal!` runs under normal-mode rules, which refuse
+-- to leave the cursor past end-of-line, so it used to drag the column back one.
+--
+-- It cannot be reproduced in-process. `nvim -l` has no input loop, so
+-- CursorMovedI never fires at all, and feedkeys() with the flags that would
+-- hold insert mode trips a grid assertion in headless neovim. Hence a child
+-- neovim driven by `-s`, which replays the keys through the same path a typed
+-- `A` takes.
+local function append_at_eol()
+  local root = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h:h:h")
+  local dir = vim.fn.tempname()
+  vim.fn.mkdir(dir, "p")
+
+  local para = {}
+  for i = 1, 30 do
+    para[i] = ("P%d. "):format(i) .. string.rep("word ", 60) .. "final"
+  end
+  vim.fn.writefile(para, dir .. "/prose.md")
+
+  vim.fn.writefile({
+    ("vim.opt.runtimepath:prepend(%q)"):format(root),
+    "vim.o.lines, vim.o.columns = 40, 220",
+    'require("writing.reading").setup()',
+    -- <C-g>c stands in for the CursorMovedI the platen listens on: the same
+    -- module call in the same insert mode, but synchronous, so the key replay
+    -- cannot race it.
+    'vim.keymap.set("i", "<C-g>c", function() require("writing.reading").centre_cursor() end)',
+    'vim.api.nvim_create_autocmd("VimEnter", { callback = function()',
+    '  vim.cmd("wincmd =")',
+    '  require("writing.reading").enable()',
+    "  vim.api.nvim_win_set_cursor(0, { 15, 10 })",
+    "end })",
+  }, dir .. "/init.lua")
+
+  -- Raw bytes, written with "b" so nothing is appended: \7 is <C-g>, \27 is
+  -- <Esc>, \13 is <CR>.
+  vim.fn.writefile({ "A\7cXX\27:w!\13:qa!\13" }, dir .. "/keys", "b")
+
+  vim.fn.system({
+    vim.v.progpath,
+    "--clean",
+    "--headless",
+    "-u",
+    dir .. "/init.lua",
+    "-s",
+    dir .. "/keys",
+    dir .. "/prose.md",
+  })
+
+  local line = (vim.fn.readfile(dir .. "/prose.md") or {})[15]
+  vim.fn.delete(dir, "rf")
+  return line
+end
+
+local NAME = "`A` appends after the last letter, not before it"
+if vim.fn.executable(vim.v.progpath) ~= 1 then
+  t.skip(NAME, "no neovim binary to drive")
+else
+  t.it(NAME, function()
+    t.matches(append_at_eol(), "finalXX$", "typed text landed at the end of the line")
+  end)
+end
+
 V.destroy()

@@ -29,6 +29,7 @@ Plugin 'elixir-editors/vim-elixir'
 Plugin 'junegunn/fzf'
 Plugin 'ledger/vim-ledger'
 Plugin 'junegunn/fzf.vim'
+Plugin 'vlime/vlime', {'rtp': 'vim/'}
 
 " Plugin 'ctrlpvim/ctrlp.vim'
 " " Plugin 'elixir-lang/vim-elixir'

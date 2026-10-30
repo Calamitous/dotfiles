@@ -142,3 +142,9 @@ tags() {
 tagf() { exiftool -a -G1 -s "${1:?usage: tagf <file>}"; }
 alias aa-xine="mplayer -vo aa"
 alias dedupe_this_dir="rmlint -p -S m"
+
+alias aa-xine-hi="mpv --vo=tct --vo-tct-256=yes --loop --no-audio"
+alias aa-xine-med="mpv --vo=tct --vo-tct-algo=plain --loop --no-audio"
+alias aa-xine-low="CACA_DRIVER=ncurses mplayer -vo caca --loop 0 -nosound -really-quiet"
+alias aa-xine-mono="mplayer -vo aa:driver=curses --loop 0 -nosound"
+
